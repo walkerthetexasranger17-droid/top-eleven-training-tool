@@ -270,8 +270,13 @@
   .squad-card-main{display:flex;align-items:center;gap:12px;min-width:0;}
   .squad-card-role{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;border-radius:6px;padding:5px 8px;flex-shrink:0;}
   .squad-card-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;text-transform:uppercase;}
+  .squad-name-row{display:flex;align-items:center;gap:7px;min-width:0;}
   .squad-card-meta{font-size:11.5px;color:var(--ink-dim);margin-top:2px;}
   .squad-card-delete{background:transparent;border:1px solid var(--line);color:var(--red);border-radius:6px;padding:6px 10px;font-size:12px;flex-shrink:0;}
+  .squad-drag-handle{width:30px;height:34px;display:flex;align-items:center;justify-content:center;flex:0 0 30px;color:var(--ink-dim);font-size:19px;letter-spacing:-3px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:7px;}
+  .squad-drag-handle:active{cursor:grabbing;color:var(--neon);background:rgba(57,255,106,.08);}
+  .squad-card.dragging{opacity:.55;border-color:var(--neon);box-shadow:0 0 20px rgba(57,255,106,.16);}
+  .squad-card.drop-target{border-color:var(--blue);box-shadow:0 0 16px rgba(30,200,255,.14);}
 
   /* ---- Player profile ---- */
   .profile-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
@@ -1099,6 +1104,24 @@ function slugifyKey(name){
 
 // Fetches every saved player and returns full records — the shared data
 // source behind the Squad grid, the Dashboard stats, and the player picker.
+const SQUAD_ORDER_KEY = 'squad:order';
+
+async function getSquadOrder(){
+  try{
+    const r = await window.storage.get(SQUAD_ORDER_KEY, false);
+    if(r && r.value){
+      const parsed = JSON.parse(r.value);
+      return Array.isArray(parsed) ? parsed : [];
+    }
+  }catch(_){}
+  return [];
+}
+
+async function saveSquadOrder(order){
+  try{ await window.storage.set(SQUAD_ORDER_KEY, JSON.stringify(order), false); }
+  catch(_){ try{ await window.storage.set(SQUAD_ORDER_KEY, JSON.stringify(order)); }catch(err){ console.warn('Could not save squad order:', err); } }
+}
+
 async function getAllPlayers(){
   let res = null;
   try{ res = await window.storage.list('player:', false); }
@@ -1179,7 +1202,22 @@ async function renderSquadGrid(){
   const emptyState = document.getElementById('squadEmptyState');
   if(!container) return;
   const players = await getAllPlayers();
-  players.sort((a,b) => new Date(b.updatedAt||b.createdAt||0) - new Date(a.updatedAt||a.createdAt||0));
+  const savedOrder = await getSquadOrder();
+  const orderMap = new Map(savedOrder.map((key, index) => [key, index]));
+  players.sort((a,b) => {
+    const ai = orderMap.has(a.key) ? orderMap.get(a.key) : Number.MAX_SAFE_INTEGER;
+    const bi = orderMap.has(b.key) ? orderMap.get(b.key) : Number.MAX_SAFE_INTEGER;
+    if(ai !== bi) return ai - bi;
+    return new Date(a.createdAt||a.updatedAt||0) - new Date(b.createdAt||b.updatedAt||0);
+  });
+
+  // If older players have no saved order yet, initialise the order once in
+  // their current list order. New players are appended automatically.
+  const knownKeys = new Set(players.map(p => p.key));
+  const cleanedOrder = savedOrder.filter(k => knownKeys.has(k));
+  const missingKeys = players.map(p => p.key).filter(k => !cleanedOrder.includes(k));
+  const effectiveOrder = [...cleanedOrder, ...missingKeys];
+  if(effectiveOrder.length !== savedOrder.length || missingKeys.length){ await saveSquadOrder(effectiveOrder); }
 
   if(players.length === 0){
     container.innerHTML = '';
@@ -1196,7 +1234,10 @@ async function renderSquadGrid(){
       <div class="squad-card-main">
         <div class="squad-card-role" style="background:${catColor}22;color:${catColor};border:1px solid ${catColor}55;">${p.position || '?'}</div>
         <div class="squad-card-info">
-          <div class="squad-card-name">${p.name || '(unnamed)'}</div>
+          <div class="squad-name-row">
+            <div class="squad-card-name">${p.name || '(unnamed)'}</div>
+            <div class="squad-drag-handle" data-drag-handle="${p.key}" aria-label="Drag ${escapeHtml(p.name || 'player')} to reorder" title="Drag to reorder">⋮⋮</div>
+          </div>
           <div class="squad-card-meta">${roleCategoryOf(p.position)}${incomplete ? ' · <span style="color:var(--amber)">incomplete scan</span>' : ''}</div>
         </div>
       </div>
@@ -1205,7 +1246,62 @@ async function renderSquadGrid(){
   }).join('');
 }
 
+let squadDrag = null;
+
+function clearSquadDrag(){
+  if(squadDrag?.card) squadDrag.card.classList.remove('dragging');
+  document.querySelectorAll('.squad-card.drop-target').forEach(el => el.classList.remove('drop-target'));
+  squadDrag = null;
+}
+
+function moveSquadCard(targetCard, clientY){
+  if(!squadDrag || !targetCard || targetCard === squadDrag.card) return;
+  const rect = targetCard.getBoundingClientRect();
+  const insertBefore = clientY < rect.top + rect.height / 2;
+  const list = document.getElementById('squadList');
+  if(insertBefore) list.insertBefore(squadDrag.card, targetCard);
+  else list.insertBefore(squadDrag.card, targetCard.nextSibling);
+  document.querySelectorAll('.squad-card.drop-target').forEach(el => el.classList.remove('drop-target'));
+  targetCard.classList.add('drop-target');
+}
+
+async function finishSquadDrag(){
+  if(!squadDrag) return;
+  const cards = [...document.querySelectorAll('#squadList .squad-card')];
+  const order = cards.map(card => card.getAttribute('data-key')).filter(Boolean);
+  await saveSquadOrder(order);
+  clearSquadDrag();
+}
+
+document.addEventListener('pointerdown', function(e){
+  const handle = e.target.closest('[data-drag-handle]');
+  if(!handle) return;
+  const card = handle.closest('.squad-card');
+  if(!card) return;
+  e.preventDefault();
+  squadDrag = {card, pointerId:e.pointerId, moved:false};
+  card.classList.add('dragging');
+  try{ handle.setPointerCapture(e.pointerId); }catch(_){}
+});
+
+document.addEventListener('pointermove', function(e){
+  if(!squadDrag || e.pointerId !== squadDrag.pointerId) return;
+  squadDrag.moved = true;
+  const target = document.elementFromPoint(e.clientX, e.clientY)?.closest('.squad-card');
+  if(target) moveSquadCard(target, e.clientY);
+});
+
+document.addEventListener('pointerup', function(e){
+  if(!squadDrag || e.pointerId !== squadDrag.pointerId) return;
+  finishSquadDrag();
+});
+
+document.addEventListener('pointercancel', function(e){
+  if(squadDrag && e.pointerId === squadDrag.pointerId) clearSquadDrag();
+});
+
 document.addEventListener('click', function(e){
+  if(e.target.closest('[data-drag-handle]')) return;
   const delBtn = e.target.closest('.squad-card-delete');
   if(delBtn){
     e.stopPropagation();
@@ -1316,6 +1412,8 @@ async function deletePlayerByKey(key, label, btnEl){
   try{
     await window.storage.delete(key, false);
     await window.storage.delete(`session:${key.replace('player:','')}`, false).catch(()=>{});
+    const order = await getSquadOrder();
+    await saveSquadOrder(order.filter(k => k !== key));
     if(currentPlayerKey === key) currentPlayerKey = null;
     await renderSquadGrid();
     setStatus('scan-status ok', 'Deleted ✓');
