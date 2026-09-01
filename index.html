@@ -491,17 +491,24 @@
     </div>
     <div class="scan-status" id="saveStatus" style="margin-top:6px;"></div>
   </section>
-    <button class="small" id="addPlayerBtn" style="width:100%;margin:0 0 16px;color:var(--neon);border-color:var(--neon-dim);">+ New Player / Clear Scan</button>
-    <div id="squadEmptyState" class="empty-state" style="display:none;">No players saved yet — tap "Add New Player" and scan a screenshot to get started.</div>
+    <div id="squadEmptyState" class="empty-state" style="display:none;">No players saved yet — upload a player screenshot above to get started.</div>
     <div id="squadList"></div>
     <div class="scan-status" id="loadStatus" style="margin-top:10px;"></div>
   </div>
 </div>
 
 <div id="page-training" style="display:none;">
-<div class="page-header"><h1>Training</h1><p>Review your player's skills and build their next 6-drill session.</p></div>
+<div class="page-header"><h1>Training</h1><p>Choose a player from your squad, then review their skills and build their next 6-drill session.</p></div>
 <div class="page-body">
 
+  <section>
+    <div class="section-head"><h2>Training player</h2></div>
+    <label class="sub" for="trainingPlayerSelect" style="display:block;margin-bottom:8px;">Player from My Squad</label>
+    <select id="trainingPlayerSelect" style="width:100%;max-width:520px;">
+      <option value="">— Select a player —</option>
+    </select>
+    <div class="scan-status" id="trainingPlayerStatus" style="margin-top:8px;"></div>
+  </section>
 
   <section>
     <div class="section-head"><h2>Skills</h2></div>
@@ -1118,6 +1125,48 @@ function roleCategoryOf(pos){
   return 'Unknown';
 }
 
+function escapeHtml(value){
+  return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function populateTrainingPlayerPicker(selectedKey = currentPlayerKey){
+  const select = document.getElementById('trainingPlayerSelect');
+  if(!select) return;
+  const players = await getAllPlayers();
+  players.sort((a,b) => String(a.name||'').localeCompare(String(b.name||''), undefined, {sensitivity:'base'}));
+  const previous = selectedKey || select.value || currentPlayerKey || '';
+  select.innerHTML = '<option value="">— Select a player —</option>' + players.map(p => {
+    const key = p.key || '';
+    const label = `${p.name || '(unnamed)'}${p.position ? ' · ' + p.position : ''}`;
+    return `<option value="${escapeHtml(key)}">${escapeHtml(label)}</option>`;
+  }).join('');
+  if(previous && players.some(p => p.key === previous)) select.value = previous;
+}
+
+async function selectTrainingPlayer(key){
+  const status = document.getElementById('trainingPlayerStatus');
+  if(!key){
+    currentPlayerKey = null;
+    currentPosition = '';
+    renderSkillGroups();
+    renderDrillList();
+    document.getElementById('results').style.display = 'none';
+    if(status){ status.className = 'scan-status'; status.textContent = 'Select a saved player to load their skills.'; }
+    return;
+  }
+  const data = await loadPlayerByKey(key);
+  if(!data) return;
+  currentPlayerKey = key;
+  renderSkillGroups();
+  Object.entries(data.skills || {}).forEach(([skill,val]) => {
+    const el = document.getElementById(`skill-${skill}`);
+    if(el) el.value = val;
+  });
+  renderDrillList();
+  document.getElementById('results').style.display = 'none';
+  if(status){ status.className = 'scan-status ok'; status.textContent = `Loaded ✓ — ${data.name || 'Player'} (${data.position || '?'})`; }
+}
+
 function isIncompleteScan(player){
   const skills = player.skills || {};
   const pool = isGK(player.position) ? GK_APPLICABLE_POOL : OUTFIELD_SKILLS;
@@ -1197,6 +1246,7 @@ async function savePlayer(){
       await window.storage.set(key, JSON.stringify(payload), false);
       currentPlayerKey = key;
       await renderSquadGrid();
+      await populateTrainingPlayerPicker(key);
       statusEl.className = 'scan-status ok';
       statusEl.textContent = `Saved ✓ — ${name} updated.`;
       return;
@@ -1542,6 +1592,12 @@ function showPage(pageId){
   window.scrollTo(0,0);
   if(pageId === 'dashboard') renderDashboard();
   if(pageId === 'squad') renderSquadGrid();
+  if(pageId === 'training') {
+    populateTrainingPlayerPicker(currentPlayerKey).then(() => {
+      const picker = document.getElementById('trainingPlayerSelect');
+      if(currentPlayerKey && picker && picker.value === currentPlayerKey) selectTrainingPlayer(currentPlayerKey);
+    });
+  }
   if(pageId === 'mentors') renderMentors();
   if(pageId === 'tactics') renderTactics();
 }
@@ -1569,9 +1625,6 @@ if(navDrawerVersion) navDrawerVersion.textContent = 'v2.6.2';
 document.querySelectorAll('.nav-item').forEach(el => {
   el.addEventListener('click', () => { showPage(el.getAttribute('data-page')); closeNavDrawer(); });
 });
-
-const addPlayerBtn = document.getElementById('addPlayerBtn');
-if(addPlayerBtn) addPlayerBtn.addEventListener('click', () => { clearPlayerForm(); showPage('squad'); window.scrollTo(0,0); });
 
 // ============================================================
 // DASHBOARD — every number here is computed from real stored
@@ -1666,6 +1719,11 @@ if(profileDeleteBtn) profileDeleteBtn.addEventListener('click', async () => {
   currentPlayerKey = null;
   showPage('squad');
 });
+
+const trainingPlayerSelect = document.getElementById('trainingPlayerSelect');
+if(trainingPlayerSelect){
+  trainingPlayerSelect.addEventListener('change', e => selectTrainingPlayer(e.target.value));
+}
 
 // Initial load
 renderDashboard();

@@ -1,6 +1,6 @@
 // Bump this string every time you ship a new version of the app.
 // Bumping it forces the old cache to be thrown away and the new files fetched.
-const CACHE_VERSION = 'te-app-v14';
+const CACHE_VERSION = 'te-app-v15';
 const CORE_ASSETS = [
   './index.html',
   './manifest.json',
