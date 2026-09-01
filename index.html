@@ -104,6 +104,7 @@
   .player-meta-field input{width:100%;box-sizing:border-box;background:transparent;border:0;outline:0;color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;padding:0;}
   .special-field{margin-top:8px;}
   .special-field input{font-family:'DM Sans',sans-serif;font-weight:500;}
+  .profile-edit-input,.profile-edit-name{width:100%;box-sizing:border-box;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:7px 8px;font:inherit;} .profile-edit-name{font-family:'Barlow Condensed',sans-serif;font-size:25px;font-weight:700;border-color:var(--line);max-width:420px;} .profile-edit-input:focus,.profile-edit-name:focus{outline:none;border-color:var(--turf);box-shadow:0 0 0 2px rgba(62,217,139,.12);}
   .profile-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:14px 0;}
   .profile-summary .summary-box{background:rgba(7,18,29,.46);border:1px solid var(--line);border-radius:8px;padding:9px 10px;}
   .profile-summary .summary-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-faint);text-transform:uppercase;}
@@ -604,19 +605,20 @@
     <button class="small profile-back" id="profileBackBtn">← Back to My Squad</button>
     <div class="profile-head">
       <div>
-        <div class="profile-name" id="profileName">—</div>
+        <input class="profile-edit-name" type="text" id="profileName" placeholder="Player name">
         <div style="color:var(--ink-dim);font-size:12.5px;margin-top:4px;" id="profileMeta"></div>
       </div>
       <span class="profile-role-badge" id="profileRole">—</span>
     </div>
     <div class="profile-summary">
-      <div class="summary-box"><div class="summary-label">Age</div><div class="summary-value" id="profileAge">—</div></div>
-      <div class="summary-box"><div class="summary-label">OVR</div><div class="summary-value" id="profileOvr">—</div></div>
-      <div class="summary-box"><div class="summary-label">Special ability</div><div class="summary-value" id="profileSpecial">—</div></div>
+      <div class="summary-box"><div class="summary-label">Age</div><input class="profile-edit-input" type="number" id="profileAge" min="1" max="100" placeholder="—"></div>
+      <div class="summary-box"><div class="summary-label">OVR</div><input class="profile-edit-input" type="number" id="profileOvr" min="1" max="300" placeholder="—"></div>
+      <div class="summary-box"><div class="summary-label">Special ability</div><input class="profile-edit-input" type="text" id="profileSpecial" placeholder="—"></div>
     </div>
     <div id="profileBars" class="bars"></div>
     <div style="display:flex;gap:10px;margin-top:20px;">
-      <button class="small" id="profileEditBtn" style="flex:1;color:var(--blue);border-color:var(--blue-dim);">Rescan / Edit</button>
+      <button class="small" id="profileSaveBtn" style="flex:1;color:var(--turf);border-color:var(--turf-dim);">Save Changes</button>
+      <button class="small" id="profileEditBtn" style="flex:1;color:var(--blue);border-color:var(--blue-dim);">Rescan / Replace Photo</button>
       <button class="small danger" id="profileDeleteBtn" style="flex:1;">Delete Player</button>
     </div>
   </div>
@@ -1353,7 +1355,9 @@ async function savePlayer(){
   if(!name){ statusEl.className='scan-status err'; statusEl.textContent = 'Enter a player name to save under.'; return; }
   const slug = slugifyKey(name);
   if(!slug){ statusEl.className='scan-status err'; statusEl.textContent = 'That name has no usable characters — try letters or numbers.'; return; }
-  const key = `player:${slug}`;
+  // When editing an existing player, keep their storage key even if their name changes.
+  // This prevents duplicate players and preserves squad ordering.
+  const key = currentPlayerKey || `player:${slug}`;
 
   // Preserve createdAt across re-saves of the same player; only set it fresh
   // for a genuinely new entry. This is additive to the existing data shape —
@@ -1532,29 +1536,69 @@ function matchSkillName(rawLabel){
 }
 
 function findHeaderNumber(rows, labelRe){
+  const isNum = t => /^\d{1,3}(?:\.5)?$/.test(String(t).trim().replace(/[^0-9.]/g,''));
   for(const row of rows){
     const labelIndex = row.words.findIndex(w => labelRe.test(w.text.trim()));
     if(labelIndex < 0) continue;
     for(let i=labelIndex+1;i<row.words.length;i++){
       const t = row.words[i].text.trim().replace(/[^0-9.]/g,'');
-      if(/^\d{1,3}(?:\.5)?$/.test(t)) return Number(t);
+      if(isNum(t)) return Number(t);
     }
     const labelWord = row.words[labelIndex];
     let best = null, bestDist = Infinity;
     rows.forEach(r => {
-      if(Math.abs(r.cy-row.cy) > 70) return;
+      if(Math.abs(r.cy-row.cy) > 90) return;
       r.words.forEach(w => {
         const t = w.text.trim().replace(/[^0-9.]/g,'');
-        if(!/^\d{1,3}(?:\.5)?$/.test(t)) return;
+        if(!isNum(t)) return;
         const dx = w.bbox.x0 - labelWord.bbox.x1;
-        if(dx < -20) return;
-        const dist = Math.abs(r.cy-row.cy) + Math.max(0, dx);
-        if(dist < bestDist){ bestDist=dist; best=Number(t); }
+        const dy = Math.abs(((w.bbox.y0+w.bbox.y1)/2) - labelWord.bbox.y1);
+        if(dx < -40 || dx > 500) return;
+        const dist = dy*2 + Math.max(0,dx);
+        if(dist < bestDist){bestDist=dist; best=Number(t);}
       });
     });
     if(best !== null) return best;
   }
   return null;
+}
+
+function findOvrNumber(rows, imageWidth, imageHeight, ageValue){
+  // Top Eleven's OVR is a prominent 2–3 digit number in the player header.
+  // OCR may miss the stylised "OVR" letters, so use the number's header position
+  // as a fallback instead of inventing a value from the skills grid.
+  const labelWords = [];
+  rows.forEach(r => r.words.forEach(w => {
+    const t=w.text.trim().toLowerCase().replace(/[^a-z]/g,'');
+    if(t==='ovr' || levenshtein(t,'ovr')<=1) labelWords.push(w);
+  }));
+  const nums=[];
+  rows.forEach(r => r.words.forEach(w => {
+    const raw=w.text.trim().replace(/[^0-9]/g,'');
+    if(!/^\d{2,3}$/.test(raw)) return;
+    const n=Number(raw);
+    if(n<50 || n>300) return;
+    const cy=(w.bbox.y0+w.bbox.y1)/2;
+    if(cy > imageHeight*0.34) return;
+    nums.push({n,w,cy});
+  }));
+  if(!nums.length) return null;
+  if(labelWords.length){
+    let best=null,score=Infinity;
+    labelWords.forEach(lw=>nums.forEach(x=>{
+      const lx=(lw.bbox.x0+lw.bbox.x1)/2, ly=(lw.bbox.y0+lw.bbox.y1)/2;
+      const nx=(x.w.bbox.x0+x.w.bbox.x1)/2;
+      const d=Math.abs(ly-x.cy)*2 + Math.max(0,nx-lw.bbox.x1)*0.35;
+      if(d<score){score=d;best=x.n;}
+    }));
+    if(best!==null) return best;
+  }
+  // If Age was detected, never reuse it as OVR. Prefer a number in the upper
+  // header and, among candidates, the one furthest from the age label region.
+  const ageCandidates=nums.filter(x => x.n !== Number(ageValue));
+  if(ageCandidates.length===1) return ageCandidates[0].n;
+  ageCandidates.sort((a,b)=>a.cy-b.cy);
+  return ageCandidates[0]?.n ?? null;
 }
 
 function detectHeaderMetadata(words, rows, rawText, imageHeight=1000, imageWidth=1000){
@@ -1617,8 +1661,9 @@ function detectHeaderMetadata(words, rows, rawText, imageHeight=1000, imageWidth
   const rawOvr = String(rawText || '').match(/\bOVR\s*[:=\-]?\s*(\d{2,3})\b/i);
   if(rawOvr) ovr = Number(rawOvr[1]);
   if(ovr === null) ovr = findHeaderNumber(sortedRows, /^OVR:?$/i);
-  if(ovr !== null && (ovr < 1 || ovr > 300)) ovr = null;
   const age = findHeaderNumber(sortedRows, /^Age:?$/i);
+  if(ovr === null) ovr = findOvrNumber(sortedRows, imageWidth, imageHeight, age);
+  if(ovr !== null && (ovr < 50 || ovr > 300 || (age !== null && ovr === age))) ovr = null;
 
   let specialAbility = '';
   for(const row of sortedRows){
@@ -1981,13 +2026,13 @@ async function openPlayerProfile(key){
   currentPlayerKey = key;
   try{ localStorage.setItem('te:lastPlayerKey', key); }catch(_){}
 
-  document.getElementById('profileName').textContent = data.name || '(unnamed)';
+  document.getElementById('profileName').value = data.name || '';
   document.getElementById('profileRole').textContent = data.position || '?';
   document.getElementById('profileMeta').textContent = roleCategoryOf(data.position) +
     (data.updatedAt ? ' · updated ' + new Date(data.updatedAt).toLocaleDateString() : '');
-  document.getElementById('profileAge').textContent = data.age ?? '—';
-  document.getElementById('profileOvr').textContent = data.ovr ?? '—';
-  document.getElementById('profileSpecial').textContent = data.specialAbility || '—';
+  document.getElementById('profileAge').value = data.age ?? '';
+  document.getElementById('profileOvr').value = data.ovr ?? '';
+  document.getElementById('profileSpecial').value = data.specialAbility || '';
 
   const white = POSITION_WHITE[data.position] || [];
   const pool = skillsFor(data.position);
@@ -2009,8 +2054,43 @@ async function openPlayerProfile(key){
 const profileBackBtn = document.getElementById('profileBackBtn');
 if(profileBackBtn) profileBackBtn.addEventListener('click', () => showPage('squad'));
 
+const profileSaveBtn = document.getElementById('profileSaveBtn');
+if(profileSaveBtn) profileSaveBtn.addEventListener('click', async () => {
+  if(!currentPlayerKey) return;
+  const data = await loadPlayerByKey(currentPlayerKey);
+  if(!data) return;
+  document.getElementById('nameInput').value = document.getElementById('profileName').value.trim();
+  document.getElementById('ageInput').value = document.getElementById('profileAge').value;
+  document.getElementById('ovrInput').value = document.getElementById('profileOvr').value;
+  document.getElementById('specialInput').value = document.getElementById('profileSpecial').value.trim();
+  currentPosition = data.position || currentPosition;
+  document.getElementById('posSelect').value = currentPosition || '';
+  Object.entries(data.skills || {}).forEach(([skill,val]) => { const el=document.getElementById(`skill-${skill}`); if(el) el.value=val; });
+  await savePlayer();
+  await openPlayerProfile(currentPlayerKey);
+});
+
 const profileEditBtn = document.getElementById('profileEditBtn');
-if(profileEditBtn) profileEditBtn.addEventListener('click', () => { showPage('training'); });
+if(profileEditBtn) profileEditBtn.addEventListener('click', async () => {
+  const key = currentPlayerKey;
+  if(!key) return;
+  const data = await loadPlayerByKey(key);
+  if(!data) return;
+  document.getElementById('nameInput').value = data.name || '';
+  document.getElementById('ageInput').value = data.age ?? '';
+  document.getElementById('ovrInput').value = data.ovr ?? '';
+  document.getElementById('specialInput').value = data.specialAbility || '';
+  document.getElementById('posSelect').value = data.position || '';
+  currentPosition = data.position || '';
+  Object.entries(data.skills || {}).forEach(([skill,val]) => { const el=document.getElementById(`skill-${skill}`); if(el) el.value=val; });
+  document.getElementById('previewRow').style.display = 'none';
+  document.getElementById('scanStatus').textContent = 'Ready — upload a new screenshot to rescan this player.';
+  document.getElementById('scanStatus').className = 'scan-status';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('playerTag').textContent = data.name ? `— ${data.name}` : '';
+  showPage('squad');
+  window.scrollTo(0,0);
+});
 
 const profileDeleteBtn = document.getElementById('profileDeleteBtn');
 if(profileDeleteBtn) profileDeleteBtn.addEventListener('click', async () => {
