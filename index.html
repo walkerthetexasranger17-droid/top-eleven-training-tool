@@ -451,20 +451,10 @@
 
 
 <div id="page-squad" style="display:none;">
-  <div class="page-header"><h1>My Squad</h1><p>Every saved player. Tap one to view and edit their profile.</p></div>
+  <div class="page-header"><h1>My Squad</h1><p>Scan and save your players here, then tap one to view and edit their profile.</p></div>
   <div class="page-body">
-    <button class="small" id="addPlayerBtn" style="width:100%;margin-bottom:16px;color:var(--neon);border-color:var(--neon-dim);">+ Add New Player</button>
-    <div id="squadEmptyState" class="empty-state" style="display:none;">No players saved yet — tap "Add New Player" and scan a screenshot to get started.</div>
-    <div id="squadList"></div>
-    <div class="scan-status" id="loadStatus" style="margin-top:10px;"></div>
-  </div>
-</div>
-
-<div id="page-training" style="display:none;">
-<div class="page-header"><h1>Training</h1><p>Scan a player, review their skills, and build their next 6-drill session.</p></div>
-<div class="page-body">
   <section>
-    <div class="section-head"><span class="step-num">02</span><h2>Player screenshot</h2></div>
+    <div class="section-head"><h2>Player screenshot</h2></div>
     <label class="dropzone" for="fileInput" id="dropzone">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3ED98B" stroke-width="1.6" style="margin:0 auto;display:block;"><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 9l5-5 5 5M12 4v13"/></svg>
       <div class="label">Tap to upload</div>
@@ -501,15 +491,26 @@
     </div>
     <div class="scan-status" id="saveStatus" style="margin-top:6px;"></div>
   </section>
+    <button class="small" id="addPlayerBtn" style="width:100%;margin:0 0 16px;color:var(--neon);border-color:var(--neon-dim);">+ New Player / Clear Scan</button>
+    <div id="squadEmptyState" class="empty-state" style="display:none;">No players saved yet — tap "Add New Player" and scan a screenshot to get started.</div>
+    <div id="squadList"></div>
+    <div class="scan-status" id="loadStatus" style="margin-top:10px;"></div>
+  </div>
+</div>
+
+<div id="page-training" style="display:none;">
+<div class="page-header"><h1>Training</h1><p>Review your player's skills and build their next 6-drill session.</p></div>
+<div class="page-body">
+
 
   <section>
-    <div class="section-head"><span class="step-num">03</span><h2>Skills</h2></div>
+    <div class="section-head"><h2>Skills</h2></div>
     <p class="sub" style="margin-bottom:14px;">Bright = white skill for the selected role. Dim = grey. Edit any value by hand if the scan misread it.</p>
     <div id="skillGroups"></div>
   </section>
 
   <section>
-    <div class="section-head"><span class="step-num">04</span><h2>Drills for this role</h2></div>
+    <div class="section-head"><h2>Drills for this role</h2></div>
     <div class="skill-cell white" style="max-width:260px;margin-bottom:14px;">
       <label>Max grey skills allowed</label>
       <input type="number" id="maxGrey" value="1" min="0" max="2">
@@ -1563,14 +1564,14 @@ if(hamburgerBtn) hamburgerBtn.addEventListener('click', toggleNavDrawer);
 const navDrawerOverlay = document.getElementById('navDrawerOverlay');
 if(navDrawerOverlay) navDrawerOverlay.addEventListener('click', closeNavDrawer);
 const navDrawerVersion = document.getElementById('navDrawerVersion');
-if(navDrawerVersion) navDrawerVersion.textContent = 'v2.6.1';
+if(navDrawerVersion) navDrawerVersion.textContent = 'v2.6.2';
 
 document.querySelectorAll('.nav-item').forEach(el => {
   el.addEventListener('click', () => { showPage(el.getAttribute('data-page')); closeNavDrawer(); });
 });
 
 const addPlayerBtn = document.getElementById('addPlayerBtn');
-if(addPlayerBtn) addPlayerBtn.addEventListener('click', () => { clearPlayerForm(); showPage('training'); });
+if(addPlayerBtn) addPlayerBtn.addEventListener('click', () => { clearPlayerForm(); showPage('squad'); window.scrollTo(0,0); });
 
 // ============================================================
 // DASHBOARD — every number here is computed from real stored
