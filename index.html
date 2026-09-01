@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Top Eleven Training Tool</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#0A0F14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="icon" href="./icon-192.png">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ---- Design tokens, adopted directly from the Grok design reference ---- */
+    --bg-primary:#050d16;
+    --bg-secondary:#07131e;
+    --panel:#0d1c2b;
+    --panel-elevated:#122536;
+    --border-token: #1e3a4e;
+    --neon-green:#7cff3a;
+    --neon-green-2:#8CFF00;
+    --electric-blue:#1ec8ff;
+    --bright-blue:#1ec8ff;
+    --text-primary:#eef6fb;
+    --text-secondary:#8aa3b5;
+    --text-muted:#5d7689;
+    --danger:#ff5a6e;
+    --warning:#ffb020;
+    --star:#ffd24a;
+    --pitch:#0c3d24;
+
+    /* ---- Legacy aliases — every existing rule below was written against
+       these names; aliasing them to the tokens above means there is still
+       exactly one source of truth (the block above), not two conflicting
+       systems, without needing to rewrite ~150 existing CSS rules by hand. ---- */
+    --bg: var(--bg-primary);
+    --bg-raised: var(--bg-secondary);
+    --bg-card: var(--panel);
+    --line: var(--border-token);
+    --turf: var(--neon-green);
+    --turf-dim:#1f4a10;
+    --amber: var(--warning);
+    --red: var(--danger);
+    --ink: var(--text-primary);
+    --ink-dim: var(--text-secondary);
+    --ink-faint: var(--text-muted);
+    --neon: var(--neon-green);
+    --neon-dim:#1f4a10;
+    --blue: var(--electric-blue);
+    --blue-dim:#0d3a4a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 500px at 50% -10%, rgba(62,217,139,0.08), transparent 60%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 42px),
+      var(--bg);
+    color:var(--ink); font-family:'DM Sans',sans-serif; min-height:100vh; padding-bottom:60px;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:0 16px;}
+  header{padding:28px 16px 20px;border-bottom:1px solid var(--line);position:relative;overflow:hidden;}
+  header::before{content:"";position:absolute;top:-40px;right:-40px;width:180px;height:180px;border:1px solid rgba(62,217,139,0.15);border-radius:50%;}
+  header::after{content:"";position:absolute;top:-10px;right:10px;width:100px;height:100px;border:1px solid rgba(62,217,139,0.1);border-radius:50%;}
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--turf);margin:0 0 6px;}
+  h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:30px;line-height:1.05;letter-spacing:.01em;margin:0 0 6px;text-transform:uppercase;}
+  .sub{color:var(--ink-dim);font-size:13.5px;line-height:1.5;max-width:52ch;margin:0;}
+  section{padding:22px 16px;border-bottom:1px solid var(--line);}
+  .section-head{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;}
+  .step-num{font-family:'JetBrains Mono',monospace;font-size:12px;border:1px solid var(--line);padding:2px 7px;border-radius:3px;color:var(--turf);}
+  h2{font-family:'Barlow Condensed',sans-serif;font-size:17px;text-transform:uppercase;letter-spacing:.04em;margin:0;font-weight:600;}
+
+  .dropzone{display:block;width:100%;border:1.5px dashed var(--line); border-radius:10px; padding:26px 16px; text-align:center;cursor:pointer; background:var(--bg-raised); transition:.15s;}
+  .dropzone:hover, .dropzone.drag{border-color:var(--turf); background:rgba(62,217,139,0.05);}
+  .dropzone .label{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;font-size:14px;letter-spacing:.03em;}
+  .dropzone .hint{font-size:12px;color:var(--ink-faint);margin-top:4px;}
+  #fileInput{cursor:pointer;}
+  .preview-row{display:flex;gap:12px;align-items:center;margin-top:14px;}
+  .preview-thumb{width:64px;height:64px;border-radius:8px;object-fit:cover;border:1px solid var(--line);}
+  .scan-status{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--ink-dim);flex:1;word-break:break-word;}
+  .scan-status.ok{color:var(--turf);}
+  .scan-status.err{color:var(--red);}
+  .scan-status.warn{color:var(--amber);}
+  .spinner{width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--turf);border-radius:50%;display:inline-block;animation:spin .7s linear infinite;margin-right:6px;vertical-align:-2px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .pos-row{display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap;}
+  .pos-row label{font-size:12.5px;color:var(--ink-dim);}
+  select{background:var(--bg-raised);border:1px solid var(--line);color:var(--turf);font-family:'JetBrains Mono',monospace;font-size:13px;padding:6px 10px;border-radius:6px;max-width:100%;}
+
+  .save-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center;}
+  .save-row input[type=text]{
+    background:var(--bg-raised);border:1px solid var(--line);color:var(--ink);
+    font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 10px;border-radius:6px;flex:1;min-width:120px;
+  }
+  button.small{
+    background:var(--bg-raised);color:var(--neon);border:1px solid var(--neon-dim);border-radius:7px;
+    font-family:'JetBrains Mono',monospace;font-size:12px;padding:9px 13px;cursor:pointer;white-space:nowrap;
+    transition:.15s;
+  }
+  button.small:hover{box-shadow:0 0 14px rgba(57,255,106,0.25);}
+  button.small.danger{color:var(--red);border-color:rgba(255,90,110,.4);}
+  button.small.danger:hover{box-shadow:0 0 14px rgba(255,90,110,0.25);}
+
+  .skill-group{margin-bottom:16px;}
+  .skill-group-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px;}
+  .skill-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .skill-cell{background:var(--bg-raised);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .skill-cell.grey{opacity:.45;}
+  .skill-cell label{font-size:13px;color:var(--ink-dim);}
+  .skill-cell.white label{color:var(--ink);font-weight:600;}
+  .skill-cell input{width:56px;background:transparent;border:none;border-bottom:1px solid var(--line);color:var(--turf);font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;text-align:right;padding:2px 0;}
+  .skill-cell.grey input{color:var(--ink-faint);}
+  .skill-cell input:focus{outline:none;border-bottom-color:var(--turf);}
+
+  .drill{background:var(--bg-card);border:1px solid var(--line);border-radius:10px;padding:14px 14px 12px;margin-bottom:10px;}
+  .drill-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:10px;}
+  .drill-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;text-transform:uppercase;letter-spacing:.02em;}
+  .drill-diff{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-faint);text-transform:uppercase;}
+  .drill-toggle{width:38px;height:22px;background:var(--bg-raised);border:1px solid var(--line);border-radius:20px;position:relative;cursor:pointer;flex-shrink:0;}
+  .drill-toggle.on{background:var(--turf-dim);border-color:var(--turf);}
+  .drill-toggle::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--ink-faint);transition:.15s;}
+  .drill-toggle.on::after{background:var(--turf);transform:translateX(16px);}
+  .chip-row{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:11.5px;font-family:'JetBrains Mono',monospace;padding:4px 8px;border-radius:5px;background:var(--bg-raised);border:1px solid var(--line);color:var(--turf);}
+  .chip.na{opacity:.3;text-decoration:line-through;}
+  .chip.grey-chip{color:var(--amber);border-color:rgba(255,176,32,.4);}
+
+  button.primary{
+    width:100%;background:linear-gradient(135deg, var(--neon), #2ad667);color:#06140D;border:none;border-radius:9px;
+    font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;
+    padding:14px;cursor:pointer;margin-top:6px;box-shadow:0 4px 20px rgba(57,255,106,0.25);transition:.15s;
+  }
+  button.primary:active{transform:translateY(1px);}
+  button.primary:hover{box-shadow:0 4px 26px rgba(57,255,106,0.4);}
+
+  .sheet{background:var(--bg-card);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  .sheet-row{display:grid;grid-template-columns:34px 1fr auto;gap:12px;align-items:center;padding:13px 14px;border-bottom:1px solid var(--line);cursor:pointer;transition:.15s;}
+  .sheet-row.done{opacity:.4;}
+  .sheet-row.done .name{text-decoration:line-through;}
+  .sheet-row:last-child{border-bottom:none;}
+  .sheet-num{font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--turf);border:1px solid var(--turf-dim);border-radius:5px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;}
+  .sheet-main .name{font-family:'Barlow Condensed',sans-serif;font-size:15px;text-transform:uppercase;}
+  .sheet-main .skills{font-size:12px;color:var(--ink-dim);margin-top:2px;}
+  .sheet-score{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-dim);text-align:right;}
+
+  .bars{margin-top:16px;}
+  .bar-row{display:grid;grid-template-columns:84px 1fr 74px;align-items:center;gap:10px;margin-bottom:9px;}
+  .bar-label{font-size:12px;color:var(--ink-dim);}
+  .bar-track{height:8px;background:var(--bg-raised);border-radius:99px;overflow:hidden;position:relative;box-shadow:0 0 0 1px rgba(140,190,220,0.1);}
+  .bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg, var(--electric-blue), var(--neon));transition:width .5s ease-out;}
+  .bar-fill.warn{background:var(--amber);}
+  .bar-fill.over{background:var(--red);}
+  .bar-val{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-dim);text-align:right;}
+  .marker{position:absolute;top:-2px;bottom:-2px;width:1px;background:rgba(255,255,255,0.35);}
+
+  .note{display:flex;gap:8px;font-size:12.5px;color:var(--ink-dim);line-height:1.5;background:var(--bg-raised);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:14px;}
+  .note b{color:var(--ink);}
+  .note.warn{border-color:rgba(255,176,32,.4);}
+  .legend{display:flex;gap:14px;font-size:11px;color:var(--ink-faint);margin-top:10px;font-family:'JetBrains Mono',monospace;}
+  .legend span{display:flex;align-items:center;gap:5px;}
+  .dot{width:8px;height:8px;border-radius:50%;}
+  .empty{color:var(--ink-faint);font-size:13px;text-align:center;padding:30px 10px;}
+  .player-tag{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--turf);margin-top:6px;}
+  optgroup{color:var(--ink-dim);font-family:'JetBrains Mono',monospace;}
+
+  body{ background:
+      radial-gradient(900px 480px at 12% -8%, rgba(30,200,255,0.14), transparent 58%),
+      radial-gradient(820px 520px at 92% 0%, rgba(124,255,58,0.10), transparent 55%),
+      radial-gradient(700px 400px at 50% 110%, rgba(14,80,120,0.12), transparent 60%),
+      var(--bg);
+  }
+
+  /* ---- App shell layout ---- */
+  .app-shell{display:flex;flex-direction:column;min-height:100vh;}
+
+  .app-header{
+    position:sticky;top:0;z-index:60;height:64px;flex-shrink:0;
+    display:flex;align-items:center;gap:14px;padding:0 16px;
+    background-image: linear-gradient(rgba(5,10,20,0.72), rgba(5,10,20,0.82)), url('header-bg.jpg');
+    background-size:100vw auto; background-position:center top; background-attachment:fixed; background-repeat:no-repeat; background-color:var(--bg);
+    box-shadow:0 6px 24px rgba(0,0,0,0.35);
+  }
+  .hamburger-btn{
+    background:transparent;border:none;padding:8px;cursor:pointer;flex-shrink:0;
+    display:flex;flex-direction:column;justify-content:center;gap:5px;width:34px;height:34px;
+  }
+  .hamburger-btn span{display:block;width:20px;height:2px;background:#fff;border-radius:2px;}
+  .header-logo{display:flex;align-items:center;gap:10px;min-width:0;}
+  .header-logo img{width:36px;height:36px;border-radius:9px;filter:drop-shadow(0 0 10px rgba(124,255,58,0.4));flex-shrink:0;}
+  .header-logo .lockup{font-family:'Barlow Condensed',sans-serif;line-height:1.1;}
+  .header-logo .lockup .l1{font-size:10px;color:var(--ink-dim);letter-spacing:.18em;text-transform:uppercase;font-weight:600;}
+  .header-logo .lockup .l2{font-size:17px;color:var(--neon);font-weight:800;letter-spacing:.02em;text-transform:uppercase;text-shadow:0 0 18px rgba(124,255,58,0.4);}
+
+  .nav-drawer-overlay{
+    display:none;position:fixed;inset:0;background:rgba(2,6,12,0.6);z-index:70;
+  }
+  .nav-drawer-overlay.open{display:block;}
+  .nav-drawer{
+    position:fixed;top:0;bottom:0;left:0;width:250px;z-index:80;
+    background:var(--bg-raised);border-right:1px solid var(--line);
+    padding:80px 14px 20px;transform:translateX(-100%);transition:transform .22s ease;
+    display:flex;flex-direction:column;
+  }
+  .nav-drawer.open{transform:translateX(0);}
+  .nav-drawer-version{margin-top:auto;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink-faint);text-align:center;padding-top:14px;}
+
+  .nav-item{
+    display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:9px;margin-bottom:3px;
+    color:var(--ink-dim);font-family:'JetBrains Mono',monospace;font-size:12.5px;cursor:pointer;
+    border:1px solid transparent;transition:.15s;
+  }
+  .nav-item:hover{background:var(--bg-card);color:var(--ink);}
+  .nav-item.active{
+    background:linear-gradient(90deg, rgba(57,255,106,0.14), rgba(0,212,255,0.05));
+    border-color:var(--neon-dim);color:var(--neon);
+    box-shadow:inset 2px 0 0 var(--neon);
+  }
+  .nav-icon{width:16px;text-align:center;flex-shrink:0;}
+
+  .main-content{flex:1;min-width:0;}
+
+  .page-header{
+    padding:24px 20px 20px;
+    background-image: linear-gradient(rgba(5,10,20,0.72), rgba(5,10,20,0.82)), url('header-bg.jpg');
+    background-size:100vw auto; background-position:center top; background-attachment:fixed; background-repeat:no-repeat; background-color:var(--bg);
+  }
+  .page-header h1{font-family:'Barlow Condensed',sans-serif;font-size:24px;text-transform:uppercase;margin:0 0 4px;}
+  .page-header p{color:var(--ink-dim);font-size:13px;margin:0;}
+  .page-body{padding:18px 20px 40px;max-width:900px;}
+
+  /* ---- Dashboard ---- */
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:22px;}
+  .stat-card{
+    background:linear-gradient(165deg, rgba(18,37,54,0.96), rgba(10,22,34,0.98));
+    border:1px solid var(--line);border-radius:20px;padding:18px;position:relative;overflow:hidden;
+  }
+  .stat-card::before{
+    content:"";position:absolute;top:-30%;right:-20%;width:80px;height:80px;border-radius:50%;
+    background:radial-gradient(circle, rgba(57,255,106,0.15), transparent 70%);
+  }
+  .stat-card .stat-label{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.07em;}
+  .stat-card .stat-value{font-family:'Barlow Condensed',sans-serif;font-size:32px;color:var(--neon);margin-top:6px;text-shadow:0 0 16px rgba(57,255,106,0.3);}
+  .dash-panel{
+    background:linear-gradient(165deg, rgba(18,37,54,0.96), rgba(10,22,34,0.98));
+    border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:14px;
+    box-shadow:0 12px 40px rgba(0,0,0,0.28), 0 0 0 1px rgba(140,190,220,0.08);
+  }
+  .dash-panel h3{
+    font-family:'Barlow Condensed',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.04em;
+    margin:0 0 12px;color:var(--ink);padding-bottom:10px;border-bottom:1px solid var(--line);
+  }
+  .dash-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px;}
+  .dash-row:last-child{border-bottom:none;}
+  .empty-state{text-align:center;padding:50px 20px;color:var(--ink-faint);}
+  .empty-state button{margin-top:14px;}
+
+  /* ---- Squad grid ---- */
+  .squad-card{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:linear-gradient(165deg, rgba(18,37,54,0.96), rgba(10,22,34,0.98));
+    border:1px solid var(--line);border-radius:16px;padding:13px 15px;margin-bottom:9px;cursor:pointer;transition:.15s;
+  }
+  .squad-card:hover{border-color:var(--neon-dim);box-shadow:0 0 16px rgba(57,255,106,0.12);}
+  .squad-card-main{display:flex;align-items:center;gap:12px;min-width:0;}
+  .squad-card-role{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;border-radius:6px;padding:5px 8px;flex-shrink:0;}
+  .squad-card-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;text-transform:uppercase;}
+  .squad-card-meta{font-size:11.5px;color:var(--ink-dim);margin-top:2px;}
+  .squad-card-delete{background:transparent;border:1px solid var(--line);color:var(--red);border-radius:6px;padding:6px 10px;font-size:12px;flex-shrink:0;}
+
+  /* ---- Player profile ---- */
+  .profile-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .profile-name{font-family:'Barlow Condensed',sans-serif;font-size:26px;text-transform:uppercase;}
+  .profile-role-badge{font-family:'JetBrains Mono',monospace;background:rgba(30,200,255,0.12);color:var(--blue);border:1px solid rgba(30,200,255,0.4);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;text-shadow:0 0 10px rgba(30,200,255,0.4);}
+  .grey-bar{background:var(--ink-faint) !important;}
+
+  /* ---- Mentors ---- */
+  .mentor-card{
+    background:linear-gradient(165deg, rgba(18,37,54,0.96), rgba(10,22,34,0.98));
+    border:1px solid var(--line);border-radius:20px;padding:17px;margin-bottom:12px;
+    box-shadow:0 12px 40px rgba(0,0,0,0.28), 0 0 0 1px rgba(140,190,220,0.08);
+  }
+  .mentor-card.assigned{border-color:var(--neon);box-shadow:0 0 20px rgba(57,255,106,0.15);}
+  .mentor-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+  .mentor-name{font-family:'Barlow Condensed',sans-serif;font-size:17px;text-transform:uppercase;}
+  .mentor-title{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--blue);}
+  .mentor-badge{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--neon);color:#06140D;padding:3px 8px;border-radius:5px;height:fit-content;box-shadow:0 0 10px rgba(57,255,106,0.5);}
+  .mentor-row{font-size:12.5px;color:var(--ink-dim);margin-bottom:6px;line-height:1.5;}
+  .mentor-row b{color:var(--ink);}
+  .mentor-assign-btn{margin-top:8px;width:100%;}
+
+  /* ---- Tactics ---- */
+  .tactic-group{
+    background:linear-gradient(165deg, rgba(18,37,54,0.96), rgba(10,22,34,0.98));
+    border:1px solid var(--line);border-radius:20px;padding:17px;margin-bottom:12px;
+    box-shadow:0 12px 40px rgba(0,0,0,0.28), 0 0 0 1px rgba(140,190,220,0.08);
+  }
+  .tactic-group-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;text-transform:uppercase;color:var(--blue);margin-bottom:12px;text-shadow:0 0 10px rgba(0,212,255,0.3);}
+  .tactic-field{margin-bottom:10px;}
+  .tactic-field label{display:block;font-size:12px;color:var(--ink-dim);margin-bottom:4px;}
+  .tactic-field select{width:100%;background:var(--bg-raised);border:1px solid var(--line);color:var(--ink);padding:9px 10px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;}
+
+  .name-suggest-box{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bg-raised);border:1px solid var(--blue-dim);border-radius:8px;padding:9px 12px;margin-top:10px;font-size:12.5px;}
+  .name-suggest-box button{background:var(--blue);color:#06140D;border:none;border-radius:5px;padding:6px 10px;font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700;flex-shrink:0;}
+
+  .placeholder-page{text-align:center;padding:60px 20px;color:var(--ink-faint);}
+  .placeholder-page .icon{font-size:40px;margin-bottom:14px;}
+
+
+  /* ---- Immersive background / transparent page treatment ---- */
+  body{
+    position:relative;
+    background:
+      linear-gradient(180deg, rgba(4,10,17,0.22) 0%, rgba(4,10,17,0.42) 42%, rgba(4,10,17,0.68) 100%),
+      url('header-bg.jpg') center top / cover fixed no-repeat,
+      #050d16;
+  }
+  .app-shell{position:relative;min-height:100vh;background:transparent;}
+  .main-content{background:transparent;}
+
+  /* The old full-width header is gone; keep only a small floating menu control. */
+  .floating-menu-btn{
+    position:fixed;top:14px;left:14px;z-index:100;
+    background:rgba(5,13,22,0.34);
+    border:1px solid rgba(140,190,220,0.22);
+    border-radius:10px;
+    backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+    box-shadow:0 4px 18px rgba(0,0,0,0.22);
+  }
+  .floating-menu-btn:hover{background:rgba(5,13,22,0.52);}
+
+  /* Page headings no longer sit on an opaque stadium panel. */
+  .page-header{
+    padding:30px 20px 12px;
+    background:transparent;
+    border:0;
+    box-shadow:none;
+  }
+  .page-body{background:transparent;}
+
+  /* Remove the hard horizontal section separators that made scrolling feel like cards. */
+  section{border-bottom:0;}
+
+  /* Let the stadium remain visible through the UI while retaining enough contrast for text. */
+  .stat-card,
+  .dash-panel,
+  .squad-card,
+  .drill,
+  .mentor-card,
+  .tactic-group{
+    background:linear-gradient(165deg, rgba(13,28,43,0.68), rgba(7,18,29,0.58));
+    backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  }
+  .sheet{
+    background:rgba(7,18,29,0.58);
+    backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  }
+  .dropzone,
+  .skill-cell,
+  .note,
+  .name-suggest-box,
+  select,
+  .save-row input[type=text]{
+    background:rgba(7,18,29,0.46);
+    backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+  }
+  .bar-track{background:rgba(7,18,29,0.48);}
+  .nav-drawer{
+    background:rgba(7,19,30,0.92);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  }
+
+  @media (max-width:700px){
+    body{
+      background:
+        linear-gradient(180deg, rgba(4,10,17,0.18) 0%, rgba(4,10,17,0.40) 44%, rgba(4,10,17,0.66) 100%),
+        url('header-bg.jpg') center top / auto 100vh fixed no-repeat,
+        #050d16;
+    }
+    .page-header{padding-top:28px;}
+    .page-body{padding-top:10px;}
+  }
+
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+<button class="hamburger-btn floating-menu-btn" id="hamburgerBtn" aria-label="Menu"><span></span><span></span><span></span></button>
+
+
+<div class="nav-drawer-overlay" id="navDrawerOverlay"></div>
+<nav class="nav-drawer" id="navDrawer">
+<div class="nav-item" data-page="dashboard"><span class="nav-icon">&#9635;</span><span>Dashboard</span></div>
+<div class="nav-item" data-page="squad"><span class="nav-icon">&#9636;</span><span>My Squad</span></div>
+<div class="nav-item" data-page="training"><span class="nav-icon">&#9673;</span><span>Training</span></div>
+<div class="nav-item" data-page="formation"><span class="nav-icon">&#9917;</span><span>Formation</span></div>
+<div class="nav-item" data-page="mentors"><span class="nav-icon">&#127891;</span><span>Mentors</span></div>
+<div class="nav-item" data-page="tactics"><span class="nav-icon">&#128203;</span><span>Tactics</span></div>
+<div class="nav-item" data-page="settings"><span class="nav-icon">&#9881;</span><span>Settings</span></div>
+<div class="nav-drawer-version" id="navDrawerVersion"></div>
+</nav>
+
+<div class="main-content">
+  <div id="globalErrorBar" style="display:none;background:#3a0f14;color:#ff8a95;border:1px solid var(--red);border-radius:8px;padding:10px 14px;margin:10px;font-family:'JetBrains Mono',monospace;font-size:12px;"></div>
+
+<div id="page-dashboard" style="display:none;">
+  <div class="page-header"><h1>Dashboard</h1><p>An honest overview of your squad — only real, computed numbers, nothing invented.</p></div>
+  <div class="page-body">
+    <div id="dashboardEmpty" class="empty-state" style="display:none;">
+      Add players to your squad to see squad statistics.
+      <br><button class="small" id="dashEmptyAddBtn">+ Add Your First Player</button>
+    </div>
+    <div id="dashboardContent" style="display:none;">
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-label">Squad Players</div><div class="stat-value" id="statTotalPlayers">0</div></div>
+      </div>
+      <div class="dash-panel"><h3>Players by Position</h3><div id="statByPosition"></div></div>
+      <div class="dash-panel"><h3>Needs Attention (incomplete scans)</h3><div id="statNeedsAttention"></div></div>
+      <div class="dash-panel"><h3>Recently Updated</h3><div id="statRecent"></div></div>
+    </div>
+  </div>
+</div>
+
+
+<div id="page-squad" style="display:none;">
+  <div class="page-header"><h1>My Squad</h1><p>Every saved player. Tap one to view and edit their profile.</p></div>
+  <div class="page-body">
+    <button class="small" id="addPlayerBtn" style="width:100%;margin-bottom:16px;color:var(--neon);border-color:var(--neon-dim);">+ Add New Player</button>
+    <div id="squadEmptyState" class="empty-state" style="display:none;">No players saved yet — tap "Add New Player" and scan a screenshot to get started.</div>
+    <div id="squadList"></div>
+    <div class="scan-status" id="loadStatus" style="margin-top:10px;"></div>
+  </div>
+</div>
+
+<div id="page-training" style="display:none;">
+<div class="page-header"><h1>Training</h1><p>Scan a player, review their skills, and build their next 6-drill session.</p></div>
+<div class="page-body">
+  <section>
+    <div class="section-head"><span class="step-num">02</span><h2>Player screenshot</h2></div>
+    <label class="dropzone" for="fileInput" id="dropzone">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3ED98B" stroke-width="1.6" style="margin:0 auto;display:block;"><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 9l5-5 5 5M12 4v13"/></svg>
+      <div class="label">Tap to upload</div>
+      <div class="hint">Skills tab screenshot, any position incl. GK</div>
+    </label>
+    <input type="file" id="fileInput" accept="image/*" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;">
+    <div class="preview-row" id="previewRow" style="display:none;">
+      <img id="previewThumb" class="preview-thumb">
+      <div class="scan-status" id="scanStatus">Ready</div>
+    </div>
+    <div class="pos-row">
+      <label>Role:</label>
+      <select id="posSelect">
+        <option value="">— none yet —</option>
+        <optgroup label="Goalkeeper"><option value="GK">GK</option></optgroup>
+        <optgroup label="Defence">
+          <option value="DR">DR</option><option value="DL">DL</option><option value="DC">DC</option>
+          <option value="DMR">DMR</option><option value="DML">DML</option>
+        </optgroup>
+        <optgroup label="Midfield">
+          <option value="DMC">DMC</option><option value="MR">MR</option><option value="ML">ML</option><option value="MC">MC</option>
+        </optgroup>
+        <optgroup label="Attack">
+          <option value="AMR">AMR</option><option value="AML">AML</option><option value="AMC">AMC</option><option value="ST">ST</option>
+        </optgroup>
+      </select>
+      <span class="player-tag" id="playerTag"></span>
+    </div>
+    <div class="note" id="scanNote" style="display:none;"></div>
+    <div class="name-suggest-box" id="nameSuggestBox" style="display:none;"></div>
+    <div class="save-row">
+      <input type="text" id="nameInput" placeholder="Player name, for saving">
+      <button class="small" id="saveBtn">💾 Save</button>
+    </div>
+    <div class="scan-status" id="saveStatus" style="margin-top:6px;"></div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="step-num">03</span><h2>Skills</h2></div>
+    <p class="sub" style="margin-bottom:14px;">Bright = white skill for the selected role. Dim = grey. Edit any value by hand if the scan misread it.</p>
+    <div id="skillGroups"></div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="step-num">04</span><h2>Drills for this role</h2></div>
+    <div class="skill-cell white" style="max-width:260px;margin-bottom:14px;">
+      <label>Max grey skills allowed</label>
+      <input type="number" id="maxGrey" value="1" min="0" max="2">
+    </div>
+    <p class="sub" style="margin-bottom:14px;">Defaults to 1 — this roughly doubles the usable drill pool for most roles while keeping grey dilution light (only one slow-training skill per drill). Push it to 2 for thinner roles like DMR/DML that stay short even at 1; drop to 0 for zero-grey-only.</p>
+    <p class="sub" style="margin-bottom:14px;" id="drillSourceNote"></p>
+    <div class="legend" style="margin-bottom:14px;">
+      <span><span class="dot" style="background:#FF5A6E"></span>Attack</span>
+      <span><span class="dot" style="background:#3ED98B"></span>Defence</span>
+      <span><span class="dot" style="background:#FFD84A"></span>Possession</span>
+      <span><span class="dot" style="background:#4AA8FF"></span>Physical</span>
+    </div>
+    <div id="drillList"></div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="step-num">05</span><h2>Ceiling</h2></div>
+    <div class="skill-cell white" style="max-width:220px;">
+      <label>Efficiency wall</label>
+      <input type="number" id="ceiling" value="180">
+    </div>
+    <p class="sub" style="margin-top:10px;">Skills past this point are flagged — training still works, it's just slower per rest pack spent.</p>
+    <div class="note" style="margin-top:16px;">
+      📈 <span><b>Tier-up reference</b> — instant flat boost to every key/white attribute, no drills needed. Useful for comparing against grinding out a session:
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12px;">
+        <span>Rare</span><span>+10</span>
+        <span>Elite</span><span>+30</span>
+        <span>Stellar</span><span>+50</span>
+        <span>Master</span><span>+80</span>
+        <span>Epic</span><span>+120</span>
+        <span>Legendary</span><span>+160</span>
+      </div>
+      Tier-up already shows up in the scanned numbers automatically — no separate tracking needed here, this is just for deciding whether tokens or training is the better spend right now.
+      </span>
+    </div>
+  </section>
+
+  <section>
+    <button class="primary" id="buildBtn">Build next session</button>
+  </section>
+
+  <section id="results" style="display:none;">
+    <div class="section-head"><span class="step-num">✓</span><h2>Your 6</h2></div>
+    <div class="sheet" id="sheet"></div>
+    <p class="sub" style="margin:14px 0 6px;">⚠️ The numbers below are a rough illustration of direction and relative pace — not a real prediction. Trust the drill order above more than these exact figures.</p>
+    <div class="bars" id="bars"></div>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--turf)"></span>under wall</span>
+      <span><span class="dot" style="background:var(--amber)"></span>past wall</span>
+      <span><span class="dot" style="background:var(--red)"></span>over 180</span>
+    </div>
+    <div class="note">💡 <span><b>Why this order:</b> every slot goes to whichever white skill is currently weakest — the tool finds the best drill for that specific skill, applies it, then re-checks what's weakest for the next slot. A genuinely weak skill can win multiple slots in a row; nothing gets shut out after one token appearance. A session is always 6 slots, not 6 different drills.</span></div>
+    <div class="note warn" id="nearZeroNote" style="display:none;">⚠️ <span>One or more picks above are flagged <b>minimal gain expected</b> — every clean drill left for those skills is a difficulty tier too easy to move a skill that's already this developed. That's expected once you've trained a role's easier drills as far as they go; the remaining growth needs a harder drill this role doesn't have a clean one for, or accepting some grey-skill bleed.</span></div>
+  </section>
+
+</div></div>
+
+
+<div id="page-player" style="display:none;">
+  <div class="page-header"><h1>Player Profile</h1><p>Full attribute breakdown. Bright = white/key skill for this role.</p></div>
+  <div class="page-body">
+    <div class="profile-head">
+      <div>
+        <div class="profile-name" id="profileName">—</div>
+        <div style="color:var(--ink-dim);font-size:12.5px;margin-top:4px;" id="profileMeta"></div>
+      </div>
+      <span class="profile-role-badge" id="profileRole">—</span>
+    </div>
+    <div id="profileBars" class="bars"></div>
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="small" id="profileEditBtn" style="flex:1;color:var(--blue);border-color:var(--blue-dim);">Rescan / Edit</button>
+      <button class="small danger" id="profileDeleteBtn" style="flex:1;">Delete Player</button>
+    </div>
+  </div>
+</div>
+
+
+<div id="page-formation" style="display:none;">
+  <div class="page-header"><h1>Formation</h1><p>Coming soon.</p></div>
+  <div class="page-body">
+    <div class="placeholder-page">
+      <div class="icon">⚽</div>
+      <p><b>Pitch-based formation builder — architecture planned, not built yet.</b></p>
+      <p style="max-width:420px;margin:10px auto;font-size:13px;">This will place your saved squad onto a real pitch layout (GK / DC-DMC-DML-DMR / MC-ML-MR / AMC-AML-AMR / ST), let you assign players to positions, and flag anyone playing outside their natural role — using the exact positions your squad data already supports. No fake formation data shown here in the meantime.</p>
+    </div>
+  </div>
+</div>
+
+
+<div id="page-mentors" style="display:none;">
+  <div class="page-header"><h1>Mentors</h1><p>Your real mentor roster and their bonuses. Tap Assign to track who's currently active.</p></div>
+  <div class="page-body">
+    <div id="mentorsList"></div>
+  </div>
+</div>
+
+
+<div id="page-tactics" style="display:none;">
+  <div class="page-header"><h1>Tactics</h1><p>Set and remember your current tactical setup across all three phases of play.</p></div>
+  <div class="page-body">
+    <div id="tacticsGroups"></div>
+    <div class="placeholder-page" style="padding:24px 10px;">
+      <p style="font-size:12.5px;max-width:420px;margin:0 auto;">Tactical <i>recommendations</i> based on your squad's attributes aren't built yet — this page just remembers your manual picks for now, so nothing here is guessing on your behalf.</p>
+    </div>
+  </div>
+</div>
+
+
+<div id="page-settings" style="display:none;">
+  <div class="page-header"><h1>Settings</h1><p>Basic data management.</p></div>
+  <div class="page-body">
+    <div class="dash-panel">
+      <h3>About this data</h3>
+      <p style="font-size:12.5px;color:var(--ink-dim);">Everything is stored locally in this browser (localStorage) — no account, no server, no sync between devices. Uninstalling the app or clearing site data will remove it.</p>
+    </div>
+    <div class="dash-panel">
+      <h3>Danger zone</h3>
+      <button class="small danger" id="clearAllDataBtn">Clear All Squad Data</button>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+// Real standalone storage — this app no longer runs inside Claude's artifact
+// sandbox, so window.storage (which only exists there) is replaced here with
+// a drop-in shim over real browser localStorage, matching the exact same
+// method signatures. Every save/load/delete/session-persist function below
+// was written against that interface and needs zero changes to work here.
+window.storage = {
+  async get(key, shared){
+    const v = localStorage.getItem('te:'+key);
+    if(v === null) return null;
+    return {key, value: v, shared: !!shared};
+  },
+  async set(key, value, shared){
+    localStorage.setItem('te:'+key, value);
+    return {key, value, shared: !!shared};
+  },
+  async delete(key, shared){
+    localStorage.removeItem('te:'+key);
+    return {key, deleted: true, shared: !!shared};
+  },
+  async list(prefix, shared){
+    const keys = [];
+    for(let i=0; i<localStorage.length; i++){
+      const k = localStorage.key(i);
+      if(k && k.indexOf('te:') === 0){
+        const bare = k.slice(3);
+        if(!prefix || bare.indexOf(prefix) === 0) keys.push(bare);
+      }
+    }
+    return {keys, prefix, shared: !!shared};
+  }
+};
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
+      .then(reg => {
+        reg.update();
+        // Re-check for a new version whenever the app is reopened/foregrounded,
+        // not just on a fresh page load — this is what was causing it to look
+        // stuck on the old version until you manually pulled-to-refresh.
+        document.addEventListener('visibilitychange', () => {
+          if(document.visibilityState === 'visible') reg.update();
+        });
+      })
+      .catch(err => console.warn('SW registration failed', err));
+  });
+}
+
+const OUTFIELD_SKILLS = ["Tackling","Marking","Positioning","Heading","Bravery","Passing","Dribbling","Crossing","Shooting","Finishing","Fitness","Strength","Aggression","Speed","Creativity"];
+const GK_SKILLS = ["Reflexes","Agility","Anticipation","Rushing Out","Communication","Throwing","Kicking","Punching","Aerial Reach","Concentration"];
+// GKs also show a Physical block in-game (Fitness, Strength, Aggression, Speed,
+// Creativity) — these are display/scan-capture only, not part of GK_SKILLS, so
+// they don't affect drill/grey-skill logic (POSITION_WHITE.GK stays as the 10
+// GK-specific attributes the real GK drills actually train).
+const GK_PHYSICAL_DISPLAY = ["Fitness","Strength","Aggression","Speed","Creativity"];
+const GROUPS_OUTFIELD = {
+  "Defence": ["Tackling","Marking","Positioning","Heading","Bravery"],
+  "Attack": ["Passing","Dribbling","Crossing","Shooting","Finishing"],
+  "Physical": ["Fitness","Strength","Aggression","Speed","Creativity"]
+};
+const GROUPS_GK = { "Goalkeeping": GK_SKILLS, "Physical": GK_PHYSICAL_DISPLAY };
+const DEFAULTS_OUTFIELD = {Tackling:0,Marking:0,Positioning:0,Heading:0,Bravery:0,Passing:0,Dribbling:0,Crossing:0,Shooting:0,Finishing:0,Fitness:0,Strength:0,Aggression:0,Speed:0,Creativity:0};
+const DEFAULTS_GK = {Reflexes:0,Agility:0,Anticipation:0,"Rushing Out":0,Communication:0,Throwing:0,Kicking:0,Punching:0,"Aerial Reach":0,Concentration:0,Fitness:0,Strength:0,Aggression:0,Speed:0,Creativity:0};
+
+// GK's own Fitness is white (confirmed against the actual bold/dim styling on a
+// real GK's in-game card) — Strength/Aggression/Speed/Creativity are not, so they
+// stay in GK_PHYSICAL_DISPLAY only, purely for reference, not counted as
+// white/grey against any drill.
+const GK_APPLICABLE_POOL = GK_SKILLS.concat(["Fitness"]);
+
+const POSITION_WHITE = {
+  GK: GK_APPLICABLE_POOL,
+  DR: ["Tackling","Marking","Positioning","Bravery","Crossing","Fitness","Aggression","Speed"],
+  DL: ["Tackling","Marking","Positioning","Bravery","Crossing","Fitness","Aggression","Speed"],
+  DC: ["Tackling","Marking","Positioning","Heading","Bravery","Fitness","Strength","Aggression"],
+  DMR: ["Tackling","Marking","Positioning","Bravery","Passing","Crossing","Strength","Aggression"],
+  DML: ["Tackling","Marking","Positioning","Bravery","Passing","Crossing","Strength","Aggression"],
+  DMC: ["Tackling","Marking","Positioning","Heading","Bravery","Passing","Fitness","Strength","Aggression","Creativity"],
+  MR: ["Positioning","Passing","Dribbling","Crossing","Fitness","Speed","Creativity"],
+  ML: ["Positioning","Passing","Dribbling","Crossing","Fitness","Speed","Creativity"],
+  MC: ["Tackling","Marking","Positioning","Bravery","Passing","Dribbling","Shooting","Fitness","Speed","Creativity"],
+  AMR: ["Passing","Dribbling","Crossing","Shooting","Finishing","Fitness","Speed","Creativity"],
+  AML: ["Passing","Dribbling","Crossing","Shooting","Finishing","Fitness","Speed","Creativity"],
+  AMC: ["Heading","Passing","Dribbling","Shooting","Finishing","Fitness","Speed","Creativity"],
+  ST: ["Positioning","Heading","Passing","Dribbling","Shooting","Finishing","Strength","Speed","Creativity"]
+};
+
+// Master drill list — transcribed directly from your in-game drill cards.
+// This is the single source of truth. Clean drills per position are computed
+// from this, not hardcoded, so nothing can be suggested that isn't really in the game.
+const MASTER_DRILLS = [
+  {name:"Slalom Dribble", skills:["Dribbling","Speed","Fitness","Passing"], diff:"Hard", cat:"Attack"},
+  {name:"Wing Play", skills:["Punching","Heading","Crossing","Finishing","Shooting"], diff:"Hard", cat:"Attack"},
+  {name:"Fast Counter-Attacks", skills:["Communication","Creativity","Passing","Crossing","Finishing"], diff:"Very Hard", cat:"Attack"},
+  {name:"Warm-Up", skills:["Aggression","Fitness","Heading","Reflexes"], diff:"Very Easy", cat:"Physical"},
+  {name:"Stretch", skills:["Strength","Speed","Agility","Fitness"], diff:"Easy", cat:"Physical"},
+  {name:"Carioca With Ladders", skills:["Speed","Aggression","Agility","Concentration"], diff:"Easy", cat:"Physical"},
+  {name:"Long Run", skills:["Fitness","Speed","Concentration"], diff:"Medium", cat:"Physical"},
+  {name:"Contact Play", skills:["Dribbling","Aggression","Marking","Strength","Bravery"], diff:"Medium", cat:"Possession"},
+  {name:"Passes Before Shot", skills:["Anticipation","Creativity","Passing","Positioning","Finishing"], diff:"Hard", cat:"Possession"},
+  {name:"Stay In Lane", skills:["Speed","Positioning","Fitness","Aerial Reach"], diff:"Medium", cat:"Possession"},
+  {name:"Video Analysis", skills:["Bravery","Positioning","Communication","Creativity"], diff:"Very Easy", cat:"Defence"},
+  {name:"Use Your Head", skills:["Creativity","Positioning","Heading","Passing"], diff:"Easy", cat:"Defence"},
+  {name:"Hold The Line", skills:["Concentration","Positioning","Marking","Communication"], diff:"Medium", cat:"Defence"},
+  {name:"Stop The Attacker", skills:["Dribbling","Marking","Tackling","Strength","Bravery"], diff:"Medium", cat:"Defence"},
+  {name:"Defending Crosses", skills:["Heading","Marking","Aerial Reach","Crossing","Bravery"], diff:"Medium", cat:"Defence"},
+  {name:"Press The Play", skills:["Aggression","Marking","Tackling","Positioning","Bravery"], diff:"Hard", cat:"Defence"},
+  {name:"Goalkeeper Training", skills:["Agility","Kicking","Aerial Reach","Throwing","Reflexes"], diff:"Hard", cat:"Defence"},
+  {name:"Ball Control", skills:["Dribbling","Concentration","Heading","Creativity"], diff:"Very Easy", cat:"Possession"},
+  {name:"Piggy In The Middle", skills:["Aggression","Fitness","Tackling","Passing","Positioning"], diff:"Easy", cat:"Possession"},
+  {name:"First Touch Play", skills:["Dribbling","Throwing","Fitness","Passing"], diff:"Easy", cat:"Possession"},
+  {name:"Rapid Side Switch", skills:["Creativity","Crossing","Speed","Communication","Passing","Positioning"], diff:"Medium", cat:"Possession"},
+  {name:"1-on-1 Finishing", skills:["Anticipation","Tackling","Rushing Out","Finishing","Dribbling"], diff:"Easy", cat:"Attack"},
+  {name:"Pass, Go and Shoot!", skills:["Speed","Anticipation","Shooting","Passing"], diff:"Easy", cat:"Attack"},
+  {name:"Set-Piece Delivery", skills:["Heading","Marking","Crossing","Rushing Out","Shooting"], diff:"Medium", cat:"Attack"},
+  {name:"Shooting Technique", skills:["Agility","Strength","Reflexes","Finishing","Shooting"], diff:"Medium", cat:"Attack"},
+  {name:"Shuttle Runs", skills:["Strength","Speed","Bravery","Agility"], diff:"Hard", cat:"Physical"},
+  {name:"Hurdle Jumps", skills:["Speed","Bravery","Aggression","Kicking"], diff:"Hard", cat:"Physical"},
+  {name:"Gym", skills:["Strength","Throwing","Fitness","Kicking"], diff:"Very Hard", cat:"Physical"},
+  {name:"Sprint", skills:["Dribbling","Speed","Fitness","Rushing Out"], diff:"Very Hard", cat:"Physical"},
+];
+
+const CATEGORY_COLORS = {
+  "Attack": "#FF5A6E",
+  "Defence": "#3ED98B",
+  "Possession": "#FFD84A",
+  "Physical": "#4AA8FF"
+};
+
+let currentPosition = "";
+let currentPlayerKey = null;
+let disabledDrills = new Set();
+
+function isGK(pos){ return pos === 'GK'; }
+function skillsFor(pos){ return isGK(pos) ? GK_APPLICABLE_POOL : OUTFIELD_SKILLS; }
+function groupsFor(pos){ return isGK(pos) ? GROUPS_GK : GROUPS_OUTFIELD; }
+function defaultsFor(pos){ return isGK(pos) ? DEFAULTS_GK : DEFAULTS_OUTFIELD; }
+
+// Splits a drill's skills into white / grey / not-applicable for a given position.
+function fitDrill(drill, pos){
+  const white = POSITION_WHITE[pos] || [];
+  const pool = skillsFor(pos);
+  const res = {white:[], grey:[], na:[]};
+  drill.skills.forEach(s => {
+    if(white.includes(s)) res.white.push(s);
+    else if(pool.includes(s)) res.grey.push(s);
+    else res.na.push(s);
+  });
+  return res;
+}
+
+function getMaxGrey(){
+  const el = document.getElementById('maxGrey');
+  return el ? (Number(el.value) || 0) : 0;
+}
+
+function cleanDrillsFor(pos){
+  const maxGrey = getMaxGrey();
+  return MASTER_DRILLS
+    .map(d => ({...d, fit: fitDrill(d,pos)}))
+    .filter(d => d.fit.white.length > 0 && d.fit.grey.length <= maxGrey);
+}
+
+function renderSkillGroups(){
+  const wrap = document.getElementById('skillGroups');
+  const white = POSITION_WHITE[currentPosition] || [];
+  const groups = groupsFor(currentPosition);
+  const defaults = defaultsFor(currentPosition);
+  wrap.innerHTML = Object.entries(groups).map(([label, skills]) => `
+    <div class="skill-group">
+      <div class="skill-group-label">${label}</div>
+      <div class="skill-grid">
+        ${skills.map(s => {
+          const isWhite = white.includes(s);
+          const prev = document.getElementById(`skill-${s}`);
+          const val = prev ? prev.value : defaults[s];
+          return `<div class="skill-cell ${currentPosition ? (isWhite?'white':'grey') : ''}">
+            <label>${s}</label>
+            <input type="number" id="skill-${s}" value="${val}">
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderDrillList(){
+  const list = document.getElementById('drillList');
+  const note = document.getElementById('drillSourceNote');
+  if(!currentPosition){
+    list.innerHTML = `<div class="note warn">⚠️ <span>Pick a role above to see clean drills for it.</span></div>`;
+    note.textContent = "";
+    return;
+  }
+  const clean = cleanDrillsFor(currentPosition);
+  const maxGrey = getMaxGrey();
+  const label = maxGrey === 0 ? '0-grey (clean) drill' : `drill with ≤${maxGrey} grey skill${maxGrey===1?'':'s'}`;
+  note.textContent = `${clean.length} ${label}${clean.length===1?'':'s'} found for ${currentPosition} out of ${MASTER_DRILLS.length} total in-game drills.`;
+  if(clean.length === 0){
+    list.innerHTML = `<div class="note warn">⚠️ <span>No drills found within that grey-skill limit for this role. Try raising "Max grey skills allowed" above.</span></div>`;
+    return;
+  }
+  list.innerHTML = clean.map(d => {
+    const on = !disabledDrills.has(d.name);
+    const safeName = d.name.replace(/"/g,'&quot;');
+    const catColor = CATEGORY_COLORS[d.cat] || 'var(--line)';
+    return `
+    <div class="drill" style="border-left:3px solid ${catColor};">
+      <div class="drill-top">
+        <div>
+          <span class="drill-name">${d.name}</span>
+          <div class="drill-diff"><span style="color:${catColor};">${d.cat}</span> · ${d.diff}</div>
+        </div>
+        <div class="drill-toggle ${on?'on':''}" data-drill-name="${safeName}"></div>
+      </div>
+      <div class="chip-row">
+        ${d.fit.white.map(s => `<span class="chip">${s}</span>`).join('')}
+        ${d.fit.grey.map(s => `<span class="chip grey-chip">${s} (grey)</span>`).join('')}
+        ${d.fit.na.map(s => `<span class="chip na">${s}</span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Event delegation for drill toggles — they're recreated on every render,
+// and inline onclick="" attributes don't fire under this page's CSP, so this
+// listener is bound once on the container instead, not per-toggle.
+document.getElementById('drillList').addEventListener('click', function(e){
+  const toggle = e.target.closest('.drill-toggle');
+  if(!toggle) return;
+  const name = toggle.getAttribute('data-drill-name');
+  if(!name) return;
+  if(disabledDrills.has(name)) disabledDrills.delete(name);
+  else disabledDrills.add(name);
+  renderDrillList();
+});
+
+document.getElementById('posSelect').addEventListener('change', (e) => {
+  currentPosition = e.target.value;
+  renderSkillGroups();
+  renderDrillList();
+});
+
+document.getElementById('maxGrey').addEventListener('input', renderDrillList);
+
+function getCurrentSkills(){
+  const vals = {};
+  skillsFor(currentPosition).forEach(s => {
+    const el = document.getElementById(`skill-${s}`);
+    if(el) vals[s] = Number(el.value) || 0;
+  });
+  return vals;
+}
+
+let sessionDone = [];
+
+// Renders the "Your 6" sheet with tap-to-check-off support, so once you've built
+// a session you can glance at the game, come back and tap off what's done, and
+// never need to write anything down — the checked state is visual only here,
+// persistSession() below is what makes it survive a reload.
+function renderSheet(chosen, doneArr){
+  const sheet = document.getElementById('sheet');
+  sheet.innerHTML = chosen.map((d,i) => {
+    const catColor = CATEGORY_COLORS[d.cat] || 'var(--turf)';
+    const isDone = !!doneArr[i];
+    return `
+    <div class="sheet-row ${isDone?'done':''}" style="border-left:3px solid ${catColor};" data-slot="${i}">
+      <div class="sheet-num" style="border-color:${catColor};color:${catColor};">${isDone ? '✓' : i+1}</div>
+      <div class="sheet-main">
+        <div class="name">${d.name}${d.nearZero ? ' <span style="color:var(--amber);font-family:\'Space Mono\',monospace;font-size:10px;">⚠ minimal gain expected</span>' : ''}</div>
+        <div class="skills"><span style="color:${catColor};">${d.cat}</span> · ${d.fit.white.join(' · ')}</div>
+      </div>
+      <div class="sheet-score">avg gap<br>${d.score.toFixed(0)}</div>
+    </div>`;
+  }).join('') || `<div class="empty">No clean drills enabled. Toggle at least one on above.</div>`;
+}
+
+document.getElementById('sheet').addEventListener('click', function(e){
+  const row = e.target.closest('.sheet-row');
+  if(!row) return;
+  const slot = Number(row.getAttribute('data-slot'));
+  if(Number.isNaN(slot)) return;
+  sessionDone[slot] = !sessionDone[slot];
+  row.classList.toggle('done', sessionDone[slot]);
+  row.querySelector('.sheet-num').textContent = sessionDone[slot] ? '✓' : String(slot+1);
+  const name = (document.getElementById('nameInput').value || '').trim();
+  if(name && lastChosen) persistSession(lastChosen, sessionDone, name);
+});
+
+let lastChosen = null;
+
+async function persistSession(chosen, doneArr, nameOverride){
+  const name = nameOverride || (document.getElementById('nameInput').value || '').trim();
+  if(!name) return; // nothing to key it under yet
+  lastChosen = chosen;
+  const slug = slugifyKey(name);
+  const payload = {
+    chosen: chosen.map(d => ({name:d.name, diff:d.diff, cat:d.cat, skills:d.fit.white, score:d.score, nearZero:d.nearZero})),
+    done: doneArr,
+    savedAt: new Date().toISOString()
+  };
+  try{ await window.storage.set(`session:${slug}`, JSON.stringify(payload), false); }
+  catch(err){ console.warn('session persist failed', err); }
+}
+
+async function restoreSession(name){
+  if(!name) return false;
+  const slug = slugifyKey(name);
+  try{
+    const res = await window.storage.get(`session:${slug}`, false);
+    if(!res) return false;
+    const data = JSON.parse(res.value);
+    const chosen = (data.chosen||[]).map(d => ({...d, fit:{white:d.skills}}));
+    sessionDone = data.done || new Array(chosen.length).fill(false);
+    lastChosen = chosen;
+    document.getElementById('results').style.display = 'block';
+    renderSheet(chosen, sessionDone);
+    const nearZeroNote = document.getElementById('nearZeroNote');
+    if(nearZeroNote) nearZeroNote.style.display = chosen.some(d=>d.nearZero) ? 'flex' : 'none';
+    document.getElementById('bars').innerHTML = '';
+    const note = document.createElement('div');
+    note.className = 'note';
+    note.innerHTML = '📌 <span>Restored your last built session for this player — still checking things off from before? Keep tapping. Building a fresh session below will replace this one.</span>';
+    document.getElementById('bars').appendChild(note);
+    return true;
+  }catch(err){ console.warn('session restore failed', err); return false; }
+}
+
+function buildSession(){
+  if(!currentPosition){
+    const results = document.getElementById('results');
+    results.style.display = 'block';
+    document.getElementById('sheet').innerHTML = `<div class="empty">Select the player's role in Step 02 first.</div>`;
+    document.getElementById('bars').innerHTML = '';
+    return;
+  }
+  const current = getCurrentSkills();
+  const ceiling = Number(document.getElementById('ceiling').value) || 140;
+  const active = cleanDrillsFor(currentPosition).filter(d => !disabledDrills.has(d.name));
+
+  // Difficulty matters in two ways, not just one:
+  // 1) A harder drill gets prioritized over an easier one when the gap is similar
+  //    (DIFFICULTY_WEIGHT), since it delivers more real XP per run.
+  // 2) An easy drill genuinely stops being able to move a skill once it's not far
+  //    below the wall anymore — it doesn't scale up to train a well-developed skill
+  //    the way a harder drill can. DIFFICULTY_CEILING_FACTOR models that: each
+  //    difficulty has its own effective ceiling (a fraction of the wall), and once
+  //    a skill passes that, the drill is treated as having ~nothing left to give
+  //    for that skill — which is exactly the "ran it 3 times, gained nothing"
+  //    behavior being reported, instead of the tool pretending it still helps.
+  const DIFFICULTY_WEIGHT = {"Very Easy":1, "Easy":1.6, "Medium":2.2, "Hard":2.8, "Very Hard":3.4};
+  const DIFFICULTY_CEILING_FACTOR = {"Very Easy":0.65, "Easy":0.8, "Medium":0.95, "Hard":1.1, "Very Hard":1.3};
+
+  // A real session is always 6 drill-slots, but a drill can repeat — it doesn't
+  // need to be 6 different drills. So we greedily fill 6 slots one at a time,
+  // re-scoring after each pick against a running projection: once a drill is
+  // chosen, its skills' gap shrinks a bit, which lets a repeat naturally fall
+  // out of favor in later slots (or stay picked again if it's still the best gap).
+  const working = {...current};
+  const chosen = [];
+
+  function scoreOf(d, working){
+    const factor = DIFFICULTY_CEILING_FACTOR[d.diff] || 1;
+    const effCeiling = ceiling * factor;
+    const deficits = d.fit.white.map(s => effCeiling - (working[s]||0));
+    const avgDeficit = deficits.reduce((a,b)=>a+b,0) / deficits.length;
+    const weight = DIFFICULTY_WEIGHT[d.diff] || 1;
+    return { score: avgDeficit * weight, avgDeficit, effCeiling };
+  }
+
+  function applyPick(d, effCeiling){
+    const weight = DIFFICULTY_WEIGHT[d.diff] || 1;
+    d.fit.white.forEach(s => {
+      const room = effCeiling - (working[s]||0);
+      // Full-strength bump while there's real room under this difficulty's effective
+      // ceiling; a token bump once past it, reflecting near-zero real gain.
+      const bump = room > 0 ? Math.min(4 * weight, room + 4) : 1;
+      working[s] = (working[s]||0) + bump;
+    });
+  }
+
+  if(active.length > 0){
+    // Every single slot — not just the first pass — goes to whichever white
+    // skill is currently weakest: find the biggest remaining gap, find the
+    // best-scoring active drill that actually trains it, pick it, then
+    // re-check what's weakest for the next slot. This is what makes it correct
+    // rather than just "each skill touched once": if a skill (like Heading or
+    // Shooting) is still the weakest after its one drill, that same logic picks
+    // it again next slot too — it doesn't get abandoned just because it was
+    // covered once, and it isn't crowded out by a couple of drills that happen
+    // to score well as a multi-skill average.
+    const skillsList = POSITION_WHITE[currentPosition] || [];
+    for(let slot = 0; slot < 6; slot++){
+      let weakestSkill = null, maxDeficit = -Infinity;
+      skillsList.forEach(s => {
+        const deficit = ceiling - (working[s]||0);
+        if(deficit > maxDeficit){ maxDeficit = deficit; weakestSkill = s; }
+      });
+
+      let best = null, bestScore = -Infinity, bestAvg = 0, bestEff = ceiling;
+      active.forEach(d => {
+        if(!d.fit.white.includes(weakestSkill)) return;
+        const {score, avgDeficit, effCeiling} = scoreOf(d, working);
+        if(score > bestScore){ bestScore = score; bestAvg = avgDeficit; best = d; bestEff = effCeiling; }
+      });
+      if(!best){
+        // Nothing active touches the weakest skill at all — fall back to
+        // whatever scores best overall so the slot isn't wasted.
+        active.forEach(d => {
+          const {score, avgDeficit, effCeiling} = scoreOf(d, working);
+          if(score > bestScore){ bestScore = score; bestAvg = avgDeficit; best = d; bestEff = effCeiling; }
+        });
+      }
+      if(!best) break;
+      chosen.push({...best, score: bestAvg, nearZero: bestAvg <= 0});
+      applyPick(best, bestEff);
+    }
+  }
+
+  sessionDone = new Array(chosen.length).fill(false);
+  renderSheet(chosen, sessionDone);
+  persistSession(chosen, sessionDone);
+
+  document.getElementById('results').style.display = 'block';
+
+  const anyNearZero = chosen.some(d => d.nearZero);
+  const nearZeroNote = document.getElementById('nearZeroNote');
+  nearZeroNote.style.display = anyNearZero ? 'flex' : 'none';
+
+  const white = POSITION_WHITE[currentPosition] || [];
+  const projected = {}; white.forEach(s => projected[s] = working[s]!==undefined ? working[s] : (current[s]||0));
+
+  const bars = document.getElementById('bars');
+  bars.innerHTML = white.map(s => {
+    const val = projected[s];
+    const pct = Math.min(val/220*100, 100);
+    const cls = val > 180 ? 'over' : (val > ceiling ? 'warn' : '');
+    const markerPct = Math.min(ceiling/220*100,100);
+    return `<div class="bar-row">
+      <div class="bar-label">${s}</div>
+      <div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div><div class="marker" style="left:${markerPct}%"></div></div>
+      <div class="bar-val">${Math.round(current[s]||0)} → ${Math.round(val)}</div>
+    </div>`;
+  }).join('');
+}
+
+// --- Persistence: artifact storage (not localStorage — that's blocked here) ---
+// Storage keys can't contain whitespace, slashes, or quotes — player names usually
+// have spaces, so we slugify for the key and keep the real name inside the payload.
+function slugifyKey(name){
+  return name.trim().toLowerCase().replace(/[\s/\\'"]+/g, '_').replace(/[^a-z0-9_\-]/g, '');
+}
+
+// Fetches every saved player and returns full records — the shared data
+// source behind the Squad grid, the Dashboard stats, and the player picker.
+async function getAllPlayers(){
+  let res = null;
+  try{ res = await window.storage.list('player:', false); }
+  catch(err1){
+    try{ res = await window.storage.list('player:'); }
+    catch(err2){ console.warn('Storage list unavailable (likely just an empty store):', err2.message || err2); }
+  }
+  const keys = (res && res.keys) || [];
+  const entries = await Promise.all(keys.map(async k => {
+    try{
+      const r = await window.storage.get(k, false);
+      const data = r ? JSON.parse(r.value) : null;
+      return data ? {...data, key: k} : null;
+    }catch(_){ return null; }
+  }));
+  return entries.filter(Boolean);
+}
+
+function roleCategoryOf(pos){
+  if(pos === 'GK') return 'Goalkeeper';
+  if(['DR','DL','DC','DMR','DML','DMC'].includes(pos)) return 'Defence';
+  if(['MR','ML','MC'].includes(pos)) return 'Midfield';
+  if(['AMR','AML','AMC','ST'].includes(pos)) return 'Attack';
+  return 'Unknown';
+}
+
+function isIncompleteScan(player){
+  const skills = player.skills || {};
+  const pool = isGK(player.position) ? GK_APPLICABLE_POOL : OUTFIELD_SKILLS;
+  const white = POSITION_WHITE[player.position] || [];
+  return white.some(s => !(skills[s] > 0)) || pool.length === 0;
+}
+
+async function renderSquadGrid(){
+  const container = document.getElementById('squadList');
+  const emptyState = document.getElementById('squadEmptyState');
+  if(!container) return;
+  const players = await getAllPlayers();
+  players.sort((a,b) => new Date(b.updatedAt||b.createdAt||0) - new Date(a.updatedAt||a.createdAt||0));
+
+  if(players.length === 0){
+    container.innerHTML = '';
+    if(emptyState) emptyState.style.display = 'block';
+    return;
+  }
+  if(emptyState) emptyState.style.display = 'none';
+
+  container.innerHTML = players.map(p => {
+    const catColor = p.position === 'GK' ? '#4AA8FF' : (POSITION_WHITE[p.position] ? '#3ED98B' : 'var(--ink-faint)');
+    const incomplete = isIncompleteScan(p);
+    return `
+    <div class="squad-card" data-key="${p.key}">
+      <div class="squad-card-main">
+        <div class="squad-card-role" style="background:${catColor}22;color:${catColor};border:1px solid ${catColor}55;">${p.position || '?'}</div>
+        <div class="squad-card-info">
+          <div class="squad-card-name">${p.name || '(unnamed)'}</div>
+          <div class="squad-card-meta">${roleCategoryOf(p.position)}${incomplete ? ' · <span style="color:var(--amber)">incomplete scan</span>' : ''}</div>
+        </div>
+      </div>
+      <button class="squad-card-delete" data-key="${p.key}" data-label="${(p.name||p.key).replace(/"/g,'&quot;')}">✕</button>
+    </div>`;
+  }).join('');
+}
+
+document.addEventListener('click', function(e){
+  const delBtn = e.target.closest('.squad-card-delete');
+  if(delBtn){
+    e.stopPropagation();
+    deletePlayerByKey(delBtn.getAttribute('data-key'), delBtn.getAttribute('data-label'), delBtn);
+    return;
+  }
+  const card = e.target.closest('.squad-card');
+  if(card){
+    openPlayerProfile(card.getAttribute('data-key'));
+  }
+});
+
+async function savePlayer(){
+  const statusEl = document.getElementById('saveStatus');
+  statusEl.className = 'scan-status';
+  if(!currentPosition){ statusEl.className='scan-status err'; statusEl.textContent = 'Pick a role first.'; return; }
+  const name = (document.getElementById('nameInput').value || '').trim();
+  if(!name){ statusEl.className='scan-status err'; statusEl.textContent = 'Enter a player name to save under.'; return; }
+  const slug = slugifyKey(name);
+  if(!slug){ statusEl.className='scan-status err'; statusEl.textContent = 'That name has no usable characters — try letters or numbers.'; return; }
+  const key = `player:${slug}`;
+
+  // Preserve createdAt across re-saves of the same player; only set it fresh
+  // for a genuinely new entry. This is additive to the existing data shape —
+  // old records without these fields still load fine, they just won't have
+  // a created/updated date to show on the dashboard.
+  let createdAt = new Date().toISOString();
+  try{
+    const existing = await window.storage.get(key, false);
+    if(existing){ const old = JSON.parse(existing.value); if(old.createdAt) createdAt = old.createdAt; }
+  }catch(_){}
+
+  const payload = { name, position: currentPosition, skills: getCurrentSkills(), createdAt, updatedAt: new Date().toISOString() };
+
+  statusEl.innerHTML = '<span class="spinner"></span>Saving…';
+  for(let attempt=1; attempt<=2; attempt++){
+    try{
+      await window.storage.set(key, JSON.stringify(payload), false);
+      currentPlayerKey = key;
+      await renderSquadGrid();
+      statusEl.className = 'scan-status ok';
+      statusEl.textContent = `Saved ✓ — ${name} updated.`;
+      return;
+    }catch(err){
+      console.error(`save attempt ${attempt} failed`, err);
+      if(attempt === 2){
+        statusEl.className = 'scan-status err';
+        statusEl.textContent = 'Save failed: ' + (err.message || err) + ' — try again in a moment.';
+      } else {
+        await new Promise(r => setTimeout(r, 800));
+      }
+    }
+  }
+}
+
+async function loadPlayerByKey(key){
+  const loadStatus = document.getElementById('loadStatus');
+  if(!key){ if(loadStatus){ loadStatus.className='scan-status err'; loadStatus.textContent = 'No player specified.'; } return false; }
+  try{
+    const res = await window.storage.get(key, false);
+    if(!res){ if(loadStatus){ loadStatus.className='scan-status err'; loadStatus.textContent = 'Nothing found for that entry.'; } return false; }
+    const data = JSON.parse(res.value);
+    currentPosition = data.position;
+    currentPlayerKey = key;
+    document.getElementById('posSelect').value = currentPosition;
+    renderSkillGroups();
+    Object.entries(data.skills || {}).forEach(([skill,val]) => {
+      const el = document.getElementById(`skill-${skill}`);
+      if(el) el.value = val;
+    });
+    renderDrillList();
+    document.getElementById('nameInput').value = data.name || '';
+    document.getElementById('playerTag').textContent = data.name ? `— ${data.name}` : '';
+    if(loadStatus){ loadStatus.className = 'scan-status ok'; loadStatus.textContent = `Loaded ✓ — ${data.name || key}`; }
+    return data;
+  }catch(err){
+    if(loadStatus){ loadStatus.className = 'scan-status err'; loadStatus.textContent = 'Load failed: ' + (err.message || err); }
+    console.error(err);
+    return false;
+  }
+}
+
+// Delete is a two-tap arm/confirm instead of window.confirm(), since native
+// dialogs don't reliably appear inside this sandboxed webview.
+// Two-tap arm/confirm delete, keyed by explicit key + a button element passed
+// in (squad cards each have their own delete button, unlike the old single
+// shared dropdown-delete button) so multiple cards can each arm independently.
+const deleteArmedKeys = {};
+async function deletePlayerByKey(key, label, btnEl){
+  const loadStatus = document.getElementById('loadStatus');
+  const setStatus = (cls, text) => { if(loadStatus){ loadStatus.className = cls; loadStatus.textContent = text; } };
+
+  if(!deleteArmedKeys[key]){
+    deleteArmedKeys[key] = true;
+    if(btnEl) btnEl.textContent = 'Confirm?';
+    setStatus('scan-status warn', 'Tap delete once more to permanently remove "' + label + '".');
+    setTimeout(() => {
+      if(deleteArmedKeys[key]){
+        deleteArmedKeys[key] = false;
+        if(btnEl) btnEl.textContent = '✕';
+      }
+    }, 4000);
+    return;
+  }
+
+  deleteArmedKeys[key] = false;
+  try{
+    await window.storage.delete(key, false);
+    await window.storage.delete(`session:${key.replace('player:','')}`, false).catch(()=>{});
+    if(currentPlayerKey === key) currentPlayerKey = null;
+    await renderSquadGrid();
+    setStatus('scan-status ok', 'Deleted ✓');
+  }catch(err){
+    setStatus('scan-status err', 'Delete error: ' + (err && err.message ? err.message : String(err)));
+    console.error(err);
+  }
+}
+
+// --- Image scan via Claude vision ---
+document.getElementById('fileInput').addEventListener('change', handleFile);
+const dz = document.getElementById('dropzone');
+dz.addEventListener('dragover', e=>{e.preventDefault(); dz.classList.add('drag');});
+dz.addEventListener('dragleave', ()=>dz.classList.remove('drag'));
+dz.addEventListener('drop', e=>{
+  e.preventDefault(); dz.classList.remove('drag');
+  if(e.dataTransfer.files[0]) handleFile({target:{files:e.dataTransfer.files}});
+});
+
+function handleFile(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    document.getElementById('previewRow').style.display = 'flex';
+    document.getElementById('previewThumb').src = reader.result;
+    scanImage(reader.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+const ALL_SKILL_NAMES = OUTFIELD_SKILLS.concat(GK_SKILLS);
+
+function normalizeForMatch(s){ return s.trim().toLowerCase().replace(/[^a-z]/g,''); }
+
+// Small Levenshtein distance, used to tolerate OCR typos (e.g. "Retlexes" vs "Reflexes")
+function levenshtein(a, b){
+  const m = a.length, n = b.length;
+  if(m === 0) return n;
+  if(n === 0) return m;
+  const dp = Array.from({length: m+1}, (_, i) => [i].concat(new Array(n).fill(0)));
+  for(let j=0; j<=n; j++) dp[0][j] = j;
+  for(let i=1; i<=m; i++){
+    for(let j=1; j<=n; j++){
+      dp[i][j] = a[i-1] === b[j-1]
+        ? dp[i-1][j-1]
+        : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+    }
+  }
+  return dp[m][n];
+}
+
+// Given a chunk of OCR'd label text, find the closest known skill name —
+// tolerant of a few misread characters, since OCR on a compact game UI won't
+// always be perfect even on clean text.
+function matchSkillName(rawLabel){
+  const norm = normalizeForMatch(rawLabel);
+  if(norm.length < 3) return null;
+  let best = null, bestDist = Infinity;
+  ALL_SKILL_NAMES.forEach(skill => {
+    const skillNorm = normalizeForMatch(skill);
+    // exact or containment match — cheap and very reliable when it hits
+    if(norm === skillNorm || norm.indexOf(skillNorm) !== -1 || skillNorm.indexOf(norm) !== -1){
+      if(0 < bestDist){ best = skill; bestDist = 0; }
+      return;
+    }
+    const dist = levenshtein(norm, skillNorm);
+    const tolerance = Math.max(1, Math.floor(skillNorm.length * 0.25));
+    if(dist <= tolerance && dist < bestDist){ best = skill; bestDist = dist; }
+  });
+  return best;
+}
+
+async function scanImage(dataUrl){
+  const status = document.getElementById('scanStatus');
+  const note = document.getElementById('scanNote');
+  note.style.display = 'none';
+  status.className = 'scan-status';
+  status.innerHTML = '<span class="spinner"></span>Loading OCR engine (first scan only, a few MB)…';
+
+  try{
+    if(typeof Tesseract === 'undefined'){
+      throw new Error('OCR library failed to load — check your connection and try again.');
+    }
+
+    const result = await Tesseract.recognize(dataUrl, 'eng', {
+      logger: (m) => {
+        if(m.status === 'recognizing text'){
+          status.innerHTML = `<span class="spinner"></span>Reading skills… ${Math.round((m.progress||0)*100)}%`;
+        }
+      }
+    });
+
+    const data = result.data;
+    const words = (data.words || []).filter(w => w.text && w.text.trim() && (w.confidence === undefined || w.confidence > 25));
+
+    if(words.length === 0){
+      throw new Error('No readable text found in that image — try a clearer, more direct screenshot.');
+    }
+
+    // Group words into rows by vertical position, since the skills screen is a
+    // 2-column grid: each row has up to two (label, number) pairs side by side.
+    const sorted = [...words].sort((a,b) => a.bbox.y0 - b.bbox.y0);
+    const rows = [];
+    const rowHeight = (sorted.reduce((sum,w) => sum + (w.bbox.y1 - w.bbox.y0), 0) / sorted.length) || 20;
+    sorted.forEach(w => {
+      const cy = (w.bbox.y0 + w.bbox.y1) / 2;
+      let row = rows.find(r => Math.abs(r.cy - cy) < rowHeight * 0.6);
+      if(!row){ row = {cy, words: []}; rows.push(row); }
+      row.words.push(w);
+      row.cy = (row.cy * (row.words.length-1) + cy) / row.words.length;
+    });
+    rows.forEach(r => r.words.sort((a,b) => a.bbox.x0 - b.bbox.x0));
+
+    // Walk each row left-to-right, accumulating label text until a number is
+    // hit, then match that accumulated label against the known skill list —
+    // this naturally handles the 2-per-row layout without needing fixed column coordinates.
+    const foundSkills = {};
+    rows.forEach(row => {
+      let labelBuffer = [];
+      row.words.forEach(w => {
+        const t = w.text.trim();
+        if(/^\d{1,3}$/.test(t)){
+          const label = labelBuffer.join(' ');
+          const matched = matchSkillName(label);
+          if(matched){ foundSkills[matched] = Number(t); }
+          labelBuffer = [];
+        } else if(/^[A-Za-z]+$/.test(t)){
+          labelBuffer.push(t);
+        } else {
+          labelBuffer = [];
+        }
+      });
+    });
+
+    if(Object.keys(foundSkills).length === 0){
+      throw new Error('Could not match any skill names — try a screenshot with more of the skills list visible, or enter values manually.');
+    }
+
+    // Both name and role sit in the header area above the skills grid, so we
+    // reuse the same row-clustering already built for skill parsing rather
+    // than re-scanning raw text — that's what makes role detection reliable
+    // even if the literal word "Roles" itself gets misread, and lets us pull
+    // a best-effort name from the very top row instead of leaving it blank.
+    const rowsSortedByY = [...rows].sort((a,b) => a.cy - b.cy);
+
+    // Role: scan rows top-to-bottom for any standalone token that's an exact
+    // match for a real position code (DR, DL, DC, MC, AMC, ST, GK, etc.) —
+    // this catches dual-role players (e.g. "DL DC" shown side by side) since
+    // it just takes the first valid code encountered, and doesn't depend on
+    // the word "Roles" being read correctly at all.
+    const POSITION_CODES = Object.keys(POSITION_WHITE);
+    let detectedRole = '';
+    for(const row of rowsSortedByY){
+      for(const w of row.words){
+        const t = w.text.trim().toUpperCase();
+        if(POSITION_CODES.includes(t)){ detectedRole = t; break; }
+      }
+      if(detectedRole) break;
+    }
+    if(!detectedRole){
+      const gkHits = GK_SKILLS.filter(s => foundSkills[s] !== undefined).length;
+      if(gkHits >= 3) detectedRole = 'GK';
+    }
+
+    // Name: best-effort from the topmost row, filtering out badge/tier words
+    // that also tend to sit near the top of the card (Age, Team, Roles, tier
+    // names) so they don't get mistaken for part of the name.
+    const NAME_BLOCKLIST = new Set(['age','team','roles','role','special','ability','ovr','rare','elite','stellar','epic','legendary','master','diamond']);
+    let detectedName = '';
+    if(rowsSortedByY[0]){
+      const nameWords = rowsSortedByY[0].words
+        .map(w => w.text.trim())
+        .filter(t => /^[A-Za-z''.-]{2,}$/.test(t) && !NAME_BLOCKLIST.has(t.toLowerCase()) && !POSITION_CODES.includes(t.toUpperCase()));
+      detectedName = nameWords.join(' ').trim();
+    }
+
+    if(detectedRole && POSITION_WHITE[detectedRole]){
+      document.getElementById('posSelect').value = detectedRole;
+      currentPosition = detectedRole;
+    }
+
+    // Name handling: never silently overwrite a name that's already in the
+    // field (e.g. you Loaded a player, then rescanned their new screenshot —
+    // OCR misreading their name slightly shouldn't cost you that link). If
+    // the field is empty, a confident single-word-or-more detection can fill
+    // it directly. Either way, show what was detected as a tappable suggestion
+    // so you can always see and correct it rather than guess what happened.
+    const nameField = document.getElementById('nameInput');
+    const nameSuggestBox = document.getElementById('nameSuggestBox');
+    if(detectedName && !nameField.value.trim()){
+      nameField.value = detectedName;
+      document.getElementById('playerTag').textContent = `— ${detectedName}`;
+    }
+    if(nameSuggestBox){
+      if(detectedName){
+        nameSuggestBox.style.display = 'flex';
+        nameSuggestBox.innerHTML = `<span>Detected name: <b>${detectedName}</b></span><button type="button" id="useDetectedNameBtn">Use this</button>`;
+        document.getElementById('useDetectedNameBtn').addEventListener('click', () => {
+          nameField.value = detectedName;
+          document.getElementById('playerTag').textContent = `— ${detectedName}`;
+          nameSuggestBox.style.display = 'none';
+        });
+      } else {
+        nameSuggestBox.style.display = 'none';
+      }
+    }
+
+    renderSkillGroups();
+    Object.entries(foundSkills).forEach(([skill,val]) => {
+      const el = document.getElementById(`skill-${skill}`);
+      if(el) el.value = val;
+    });
+    renderDrillList();
+
+    if(!detectedRole){
+      note.style.display = 'flex';
+      note.className = 'note warn';
+      note.innerHTML = `⚠️ <span>Couldn't confidently detect the role — pick it manually below. ${!detectedName ? "Couldn't confidently read the name either — type it in manually. " : ""}Skills were filled in where matched; double-check every value against the screenshot, since free OCR is less reliable than the numbers actually shown.</span>`;
+    } else if(!detectedName){
+      note.style.display = 'flex';
+      note.className = 'note warn';
+      note.innerHTML = `⚠️ <span>Couldn't confidently read the name — type it in manually below before saving.</span>`;
+    }
+
+    const matchedCount = Object.keys(foundSkills).length;
+    status.className = 'scan-status ok';
+    status.textContent = `Scanned ✓ — matched ${matchedCount} skill${matchedCount===1?'':'s'}. Double-check every value against the screenshot — free OCR misreads more often than not.`;
+  } catch(err){
+    status.className = 'scan-status err';
+    status.textContent = 'Scan failed: ' + err.message;
+    console.error(err);
+  }
+}
+
+window.addEventListener('error', function(e){
+  const bar = document.getElementById('globalErrorBar');
+  if(bar){ bar.style.display = 'block'; bar.textContent = 'Script error: ' + e.message + ' (line ' + e.lineno + ')'; }
+});
+
+document.getElementById('saveBtn').addEventListener('click', savePlayer);
+document.getElementById('buildBtn').addEventListener('click', buildSession);
+
+function clearPlayerForm(){
+  document.getElementById('nameInput').value = '';
+  document.getElementById('playerTag').textContent = '';
+  document.getElementById('posSelect').value = '';
+  currentPosition = '';
+  currentPlayerKey = null;
+  renderSkillGroups();
+  renderDrillList();
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('previewRow').style.display = 'none';
+  const loadStatus = document.getElementById('loadStatus');
+  if(loadStatus){ loadStatus.className = 'scan-status ok'; loadStatus.textContent = 'Ready for a new player. Pick their role, then scan.'; }
+}
+
+renderSkillGroups();
+renderDrillList();
+
+// ============================================================
+// PAGE NAVIGATION SHELL
+// ============================================================
+const PAGES = ['dashboard','squad','training','player','formation','mentors','tactics','settings'];
+
+function showPage(pageId){
+  PAGES.forEach(p => {
+    const el = document.getElementById('page-' + p);
+    if(el) el.style.display = (p === pageId) ? 'block' : 'none';
+  });
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.getAttribute('data-page') === pageId);
+  });
+  window.scrollTo(0,0);
+  if(pageId === 'dashboard') renderDashboard();
+  if(pageId === 'squad') renderSquadGrid();
+  if(pageId === 'mentors') renderMentors();
+  if(pageId === 'tactics') renderTactics();
+}
+
+function closeNavDrawer(){
+  const drawer = document.getElementById('navDrawer');
+  const overlay = document.getElementById('navDrawerOverlay');
+  if(drawer) drawer.classList.remove('open');
+  if(overlay) overlay.classList.remove('open');
+}
+function toggleNavDrawer(){
+  const drawer = document.getElementById('navDrawer');
+  const overlay = document.getElementById('navDrawerOverlay');
+  if(!drawer) return;
+  const isOpen = drawer.classList.toggle('open');
+  if(overlay) overlay.classList.toggle('open', isOpen);
+}
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+if(hamburgerBtn) hamburgerBtn.addEventListener('click', toggleNavDrawer);
+const navDrawerOverlay = document.getElementById('navDrawerOverlay');
+if(navDrawerOverlay) navDrawerOverlay.addEventListener('click', closeNavDrawer);
+const navDrawerVersion = document.getElementById('navDrawerVersion');
+if(navDrawerVersion) navDrawerVersion.textContent = 'v2.6.1';
+
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.addEventListener('click', () => { showPage(el.getAttribute('data-page')); closeNavDrawer(); });
+});
+
+const addPlayerBtn = document.getElementById('addPlayerBtn');
+if(addPlayerBtn) addPlayerBtn.addEventListener('click', () => { clearPlayerForm(); showPage('training'); });
+
+// ============================================================
+// DASHBOARD — every number here is computed from real stored
+// players. Nothing here is fabricated; anything we can't
+// honestly compute (quality %, condition, morale, match info)
+// is simply not shown, since this app has never scanned that data.
+// ============================================================
+async function renderDashboard(){
+  const players = await getAllPlayers();
+  const empty = document.getElementById('dashboardEmpty');
+  const content = document.getElementById('dashboardContent');
+  if(players.length === 0){
+    if(empty) empty.style.display = 'block';
+    if(content) content.style.display = 'none';
+    return;
+  }
+  if(empty) empty.style.display = 'none';
+  if(content) content.style.display = 'block';
+
+  document.getElementById('statTotalPlayers').textContent = players.length;
+
+  const byCategory = {};
+  players.forEach(p => {
+    const cat = roleCategoryOf(p.position);
+    byCategory[cat] = (byCategory[cat]||0) + 1;
+  });
+  const catOrder = ['Goalkeeper','Defence','Midfield','Attack','Unknown'];
+  document.getElementById('statByPosition').innerHTML = catOrder
+    .filter(c => byCategory[c])
+    .map(c => `<div class="dash-row"><span>${c}</span><span>${byCategory[c]}</span></div>`)
+    .join('') || '<div class="dash-row"><span>No roles set yet</span></div>';
+
+  const incomplete = players.filter(isIncompleteScan);
+  const attentionEl = document.getElementById('statNeedsAttention');
+  attentionEl.innerHTML = incomplete.length
+    ? incomplete.slice(0,5).map(p => `<div class="dash-row"><span>${p.name||p.key}</span><span style="color:var(--amber)">incomplete</span></div>`).join('')
+    : '<div class="dash-row"><span style="color:var(--turf)">All scanned players look complete ✓</span></div>';
+
+  const recent = [...players].sort((a,b) => new Date(b.updatedAt||b.createdAt||0) - new Date(a.updatedAt||a.createdAt||0)).slice(0,5);
+  document.getElementById('statRecent').innerHTML = recent.map(p => {
+    const when = p.updatedAt || p.createdAt;
+    const dateStr = when ? new Date(when).toLocaleDateString() : 'unknown date';
+    return `<div class="dash-row"><span>${p.name||p.key} <span style="color:var(--ink-faint)">(${p.position||'?'})</span></span><span>${dateStr}</span></div>`;
+  }).join('') || '<div class="dash-row"><span>—</span></div>';
+}
+
+// ============================================================
+// PLAYER PROFILE
+// ============================================================
+async function openPlayerProfile(key){
+  const data = await loadPlayerByKey(key);
+  if(!data) return;
+  currentPlayerKey = key;
+
+  document.getElementById('profileName').textContent = data.name || '(unnamed)';
+  document.getElementById('profileRole').textContent = data.position || '?';
+  document.getElementById('profileMeta').textContent = roleCategoryOf(data.position) +
+    (data.updatedAt ? ' · updated ' + new Date(data.updatedAt).toLocaleDateString() : '');
+
+  const white = POSITION_WHITE[data.position] || [];
+  const pool = skillsFor(data.position);
+  const barsEl = document.getElementById('profileBars');
+  barsEl.innerHTML = pool.map(s => {
+    const val = (data.skills || {})[s] || 0;
+    const isWhite = white.includes(s);
+    const pct = Math.min(val/220*100, 100);
+    return `<div class="bar-row">
+      <div class="bar-label" style="${isWhite ? 'color:var(--ink);font-weight:600;' : 'color:var(--ink-faint);'}">${s}</div>
+      <div class="bar-track"><div class="bar-fill ${isWhite?'':'grey-bar'}" style="width:${pct}%"></div></div>
+      <div class="bar-val">${val}</div>
+    </div>`;
+  }).join('');
+
+  showPage('player');
+}
+
+const profileEditBtn = document.getElementById('profileEditBtn');
+if(profileEditBtn) profileEditBtn.addEventListener('click', () => { showPage('training'); });
+
+const profileDeleteBtn = document.getElementById('profileDeleteBtn');
+if(profileDeleteBtn) profileDeleteBtn.addEventListener('click', async () => {
+  if(!currentPlayerKey) return;
+  const name = document.getElementById('profileName').textContent;
+  if(!profileDeleteBtn.armed){
+    profileDeleteBtn.armed = true;
+    profileDeleteBtn.textContent = 'Tap again to confirm';
+    setTimeout(() => { profileDeleteBtn.armed = false; profileDeleteBtn.textContent = 'Delete Player'; }, 4000);
+    return;
+  }
+  await window.storage.delete(currentPlayerKey, false);
+  await window.storage.delete(`session:${currentPlayerKey.replace('player:','')}`, false).catch(()=>{});
+  currentPlayerKey = null;
+  showPage('squad');
+});
+
+// Initial load
+renderDashboard();
+renderSquadGrid();
+showPage('dashboard');
+
+
+// ============================================================
+// MENTORS — real data transcribed from your own screenshots,
+// not invented. "Assigned" is stored locally so the app remembers
+// your current pick between visits.
+// ============================================================
+const MENTORS = [{"name": "Alan Shearer", "title": "The Finisher", "signature": "Corners, Free Kicks and Penalties are 25% more effective. If you miss, the opponent's attackers suffer a -10% penalty to their next attack.", "attributeBoost": "+20 (next +25) Strength and Shooting boost during the match", "tacticBoost": "Increases Dribbling effectiveness by 30%"}, {"name": "Lewis Green", "title": "The Wing Commander", "signature": "Crosses become extremely precise, making the defender's Heading attribute 80% less effective in Aerial duels", "attributeBoost": "+20 (next +40) Crossing and Heading boost during the match", "tacticBoost": "Increases the effectiveness of attacks over the Wings by 30%"}, {"name": "Rubén Herrera", "title": "The Saboteur", "signature": "During a counter-attack, the opposition's defense loses all organization, making their Marking, Positioning & Speed attributes 30% less effective", "attributeBoost": "+15 (next +20) Creativity and Passing boost during the match", "tacticBoost": "Increases Counter Attack effectiveness by 30%"}, {"name": "Cesc Fàbregas", "title": "The Architect", "signature": "Every successful pass makes the next one 15% harder to intercept, but your midfielders lose 8% more Stamina per attack", "attributeBoost": "+10 (next +15) Dribbling and Shooting boost during the match", "tacticBoost": "Increases Short Pass effectiveness by 30%"}, {"name": "Nemanja Vidić", "title": "The Iron Guard", "signature": "Each successful defensive check drains 2% of the opponent attacker's Condition, but risk of receiving a card is 10% higher", "attributeBoost": "+10 (next +15) Tackling and Bravery boost during the match", "tacticBoost": "Defensive actions are 25% more effective, but at the cost of 10% more Condition"}, {"name": "Claude Makélélé", "title": "The Enforcer", "signature": "While leading, your Defenders gain +15 to all Defensive attributes, but your team's Attacking attributes suffer a -10 penalty", "attributeBoost": "+10 (next +15) Bravery and Positioning boost during the match", "tacticBoost": "Defensive actions are 25% more effective against Short Passes"}, {"name": "Jonas Braun", "title": "The Analyst", "signature": "At halftime, this Mentor identifies the opponent's weakest defensive zone and grants a +20 All Attribute boost to all of your players attacking through that area for the rest of the game", "attributeBoost": "+5 to Strength and Positioning boost while the Mentor is assigned during the match", "tacticBoost": "Increases Long Pass effectiveness by 15% (next 20%)"}];
+
+async function getAssignedMentor(){
+  try{ const r = await window.storage.get('mentor:assigned', false); return r ? r.value : null; }catch(_){ return null; }
+}
+async function setAssignedMentor(name){
+  await window.storage.set('mentor:assigned', name, false);
+}
+
+async function renderMentors(){
+  const container = document.getElementById('mentorsList');
+  if(!container) return;
+  const assigned = await getAssignedMentor();
+  container.innerHTML = MENTORS.map(m => {
+    const isAssigned = assigned === m.name;
+    return `
+    <div class="mentor-card ${isAssigned?'assigned':''}">
+      <div class="mentor-head">
+        <div>
+          <div class="mentor-name">${m.name}</div>
+          <div class="mentor-title">${m.title}</div>
+        </div>
+        ${isAssigned ? '<span class="mentor-badge">ASSIGNED</span>' : ''}
+      </div>
+      <div class="mentor-row"><b>Signature Move:</b> ${m.signature}</div>
+      <div class="mentor-row"><b>Attribute Boost:</b> ${m.attributeBoost}</div>
+      <div class="mentor-row"><b>Tactic Boost:</b> ${m.tacticBoost}</div>
+      <button class="small mentor-assign-btn" data-mentor="${m.name.replace(/"/g,'&quot;')}">${isAssigned ? 'Unassign' : 'Assign'}</button>
+    </div>`;
+  }).join('');
+}
+
+document.addEventListener('click', async function(e){
+  const btn = e.target.closest('.mentor-assign-btn');
+  if(!btn) return;
+  const name = btn.getAttribute('data-mentor');
+  const current = await getAssignedMentor();
+  await setAssignedMentor(current === name ? '' : name);
+  renderMentors();
+});
+
+// ============================================================
+// TACTICS — the real option structure from your screenshots
+// (In Possession / In Transition / Out of Possession). This
+// stores your current selections; it does not yet recommend
+// anything, since a real recommendation needs squad-wide
+// attribute analysis this app doesn't do yet.
+// ============================================================
+const TACTICS_OPTIONS = {
+  "In Possession": {
+    "Shooting tendency": ["Shoot on Sight","Work it into the Box","Balanced"],
+    "Passing style": ["Short","Long","Mixed"],
+    "Focus passing": ["Left Flank","Right Flank","Both Flanks","Through the Middle","Balanced"]
+  },
+  "In Transition": {
+    "Possession Lost": ["Counter Press","Regroup"],
+    "Possession Won": ["Focus on Buildup","Counter Attack"],
+    "Mentality": ["Hard Defending","Defending","Normal","Attacking","Hard Attacking"]
+  },
+  "Out of Possession": {
+    "Marking style": ["Man to Man","Zonal"],
+    "Back line": ["Track Opponent","Set Offside Trap"],
+    "Tackling style": ["Stay on Feet","Aggressive","Balanced"]
+  }
+};
+
+async function getTacticSelections(){
+  try{ const r = await window.storage.get('tactics:current', false); return r ? JSON.parse(r.value) : {}; }catch(_){ return {}; }
+}
+async function setTacticSelection(group, field, value){
+  const cur = await getTacticSelections();
+  cur[group] = cur[group] || {};
+  cur[group][field] = value;
+  await window.storage.set('tactics:current', JSON.stringify(cur), false);
+}
+
+async function renderTactics(){
+  const container = document.getElementById('tacticsGroups');
+  if(!container) return;
+  const selections = await getTacticSelections();
+  container.innerHTML = Object.entries(TACTICS_OPTIONS).map(([group, fields]) => `
+    <div class="tactic-group">
+      <div class="tactic-group-title">${group}</div>
+      ${Object.entries(fields).map(([field, options]) => {
+        const current = (selections[group] && selections[group][field]) || '';
+        return `<div class="tactic-field">
+          <label>${field}</label>
+          <select data-group="${group}" data-field="${field}" class="tactic-select">
+            <option value="">— not set —</option>
+            ${options.map(o => `<option value="${o}" ${o===current?'selected':''}>${o}</option>`).join('')}
+          </select>
+        </div>`;
+      }).join('')}
+    </div>
+  `).join('');
+}
+
+document.addEventListener('change', function(e){
+  const sel = e.target.closest('.tactic-select');
+  if(!sel) return;
+  setTacticSelection(sel.getAttribute('data-group'), sel.getAttribute('data-field'), sel.value);
+});
+
+
+const dashEmptyAddBtn = document.getElementById('dashEmptyAddBtn');
+if(dashEmptyAddBtn) dashEmptyAddBtn.addEventListener('click', () => { clearPlayerForm(); showPage('training'); });
+const clearAllBtn = document.getElementById('clearAllDataBtn');
+if(clearAllBtn){
+  clearAllBtn.addEventListener('click', async () => {
+    if(!clearAllBtn.armed){
+      clearAllBtn.armed = true;
+      clearAllBtn.textContent = 'Tap again to confirm — this cannot be undone';
+      setTimeout(() => { clearAllBtn.armed = false; clearAllBtn.textContent = 'Clear All Squad Data'; }, 4000);
+      return;
+    }
+    const keys = [];
+    for(let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if(k && k.indexOf('te:')===0) keys.push(k); }
+    keys.forEach(k => localStorage.removeItem(k));
+    clearAllBtn.textContent = 'Cleared ✓';
+    renderSquadGrid(); renderDashboard();
+  });
+}
+</script>
+</body>
+</html>
