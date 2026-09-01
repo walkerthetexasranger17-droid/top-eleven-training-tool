@@ -1,6 +1,6 @@
 {
   "name": "Top Eleven Training Tool",
-  "short_name": "TE Training",
+  "short_name": "Top Eleven Tool",
   "description": "Squad management, training sessions, mentors and tactics for Top Eleven.",
   "start_url": "./index.html",
   "display": "standalone",
