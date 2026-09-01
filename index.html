@@ -304,13 +304,46 @@
   .squad-name-row{display:flex;align-items:center;gap:7px;min-width:0;}
   .squad-card-meta{font-size:11.5px;color:var(--ink-dim);margin-top:2px;}
   .squad-card-delete{background:transparent;border:1px solid var(--line);color:var(--red);border-radius:6px;padding:6px 10px;font-size:12px;flex-shrink:0;}
-  .squad-drag-handle{width:30px;height:34px;display:flex;align-items:center;justify-content:center;flex:0 0 30px;color:var(--ink-dim);font-size:19px;letter-spacing:-3px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:7px;}
+  .squad-drag-handle{display:none;}
   .squad-drag-handle:active{cursor:grabbing;color:var(--neon);background:rgba(57,255,106,.08);}
   .squad-card.dragging{opacity:.55;border-color:var(--neon);box-shadow:0 0 20px rgba(57,255,106,.16);}
   .squad-card.drop-target{border-color:var(--blue);box-shadow:0 0 16px rgba(30,200,255,.14);}
 
   /* ---- Player profile ---- */
-  .profile-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .profile-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:14px;}
+  .profile-avatar{width:88px;height:88px;border-radius:14px;object-fit:cover;object-position:center top;border:1px solid var(--line);background:rgba(7,18,29,.6);box-shadow:0 8px 24px rgba(0,0,0,.22);flex:0 0 88px;}
+  .profile-head-copy{min-width:0;flex:1;}
+  .playstyle-panel{background:rgba(7,18,29,.46);border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:12px;}
+  .playstyle-option{display:flex;align-items:flex-start;gap:10px;background:var(--bg-raised);border:1px solid var(--line);border-radius:8px;padding:9px 10px;margin-bottom:7px;cursor:pointer;}
+  .playstyle-option:last-child{margin-bottom:0;}
+  .playstyle-option.disabled{opacity:.55;cursor:default;}
+  .playstyle-option-title{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--blue);}
+  .playstyle-option-desc{font-size:11.5px;color:var(--ink-dim);line-height:1.4;margin-top:2px;}
+  .playstyle-chip{display:inline-flex;align-items:center;font-family:'JetBrains Mono',monospace;font-size:10.5px;padding:4px 7px;border-radius:5px;background:rgba(30,200,255,.08);border:1px solid var(--blue-dim);color:var(--blue);margin:4px 5px 0 0;}
+  .formation-panel{background:rgba(7,18,29,.56);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:14px;}
+  .formation-toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px;}
+  .formation-toolbar .small{margin:0;}
+  .formation-summary{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);line-height:1.45;}
+  .pitch{position:relative;width:min(100%,620px);aspect-ratio:1.35/1;margin:0 auto;border:2px solid rgba(238,246,251,.7);border-radius:10px;overflow:hidden;background:linear-gradient(90deg,rgba(48,120,72,.48),rgba(35,100,59,.48));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);}
+  .pitch::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0,rgba(255,255,255,.035) 8%,transparent 8%,transparent 16%);pointer-events:none;}
+  .pitch-line{position:absolute;border:1px solid rgba(255,255,255,.6);pointer-events:none;}
+  .pitch-mid{left:0;right:0;top:50%;border-top:1px solid rgba(255,255,255,.6);}
+  .pitch-circle{left:calc(50% - 12%);top:calc(50% - 16%);width:24%;height:32%;border-radius:50%;}
+  .pitch-box-top{left:31%;top:0;width:38%;height:18%;}
+  .pitch-box-bottom{left:31%;bottom:0;width:38%;height:18%;}
+  .pitch-six-top{left:42%;top:0;width:16%;height:7%;}
+  .pitch-six-bottom{left:42%;bottom:0;width:16%;height:7%;}
+  .pitch-player{position:absolute;transform:translate(-50%,-50%);min-width:70px;max-width:110px;text-align:center;cursor:pointer;z-index:3;}
+  .pitch-player-dot{width:42px;height:42px;margin:0 auto 4px;border-radius:50%;border:2px solid var(--ink);background:rgba(5,13,22,.9);display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.35);}
+  .pitch-player-dot img{width:100%;height:100%;object-fit:cover;object-position:center top;}
+  .pitch-player-name{font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;text-shadow:0 1px 4px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pitch-player-role{font-size:9px;color:var(--ink-dim);text-shadow:0 1px 4px #000;}
+  .formation-bench{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin-top:12px;}
+  .bench-card{background:rgba(7,18,29,.55);border:1px solid var(--line);border-radius:9px;padding:8px;font-size:11px;}
+  .bench-card b{color:var(--ink);}
+  .bench-card span{color:var(--ink-dim);}
+  .formation-note{font-size:11.5px;color:var(--ink-dim);line-height:1.5;margin-top:10px;}
+
   .profile-name{font-family:'Barlow Condensed',sans-serif;font-size:26px;text-transform:uppercase;}
   .profile-role-badge{font-family:'JetBrains Mono',monospace;background:rgba(30,200,255,0.12);color:var(--blue);border:1px solid rgba(30,200,255,0.4);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;text-shadow:0 0 10px rgba(30,200,255,0.4);}
   .grey-bar{background:var(--ink-faint) !important;}
@@ -546,6 +579,10 @@
       <div class="ability-panel-head"><div><b>Special abilities</b><div class="sub">Manual selection only — choose up to 2. The screenshot scan will never assign one.</div></div><span class="ability-count" id="addAbilityCount">0 / 2</span></div>
       <div id="addAbilityPicker"></div>
     </div>
+    <div class="playstyle-panel">
+      <div class="ability-panel-head"><div><b>Playstyle</b><div class="sub">Manual selection only — choose a maximum of 1. Options are filtered by position.</div></div><span class="ability-count" id="addPlaystyleCount">0 / 1</span></div>
+      <div id="addPlaystylePicker"></div>
+    </div>
     <div class="scan-status" id="saveStatus" style="margin-top:6px;"></div>
   </section>
 
@@ -641,7 +678,8 @@
   <div class="page-body">
     <button class="small profile-back" id="profileBackBtn">← Back to My Squad</button>
     <div class="profile-head">
-      <div>
+      <img id="profileAvatar" class="profile-avatar" alt="Player profile picture" style="display:none;">
+      <div class="profile-head-copy">
         <input class="profile-edit-name" type="text" id="profileName" placeholder="Player name" disabled>
         <div style="color:var(--ink-dim);font-size:12.5px;margin-top:4px;" id="profileMeta"></div>
       </div>
@@ -653,6 +691,7 @@
       <div class="summary-box"><div class="summary-label">Age</div><input class="profile-edit-input" type="number" id="profileAge" min="1" max="100" placeholder="—" disabled></div>
       <div class="summary-box"><div class="summary-label">OVR</div><input class="profile-edit-input" type="number" id="profileOvr" min="1" max="300" placeholder="—" disabled></div>
       <div class="summary-box" style="grid-column:span 2;"><div class="summary-label">Special abilities</div><div id="profileAbilities"></div></div>
+      <div class="summary-box" style="grid-column:span 2;"><div class="summary-label">Playstyle</div><div id="profilePlaystyle"></div></div>
     </div>
     <div id="profileBars" class="bars"></div>
     <div class="profile-actions" id="profileActions">
@@ -669,12 +708,20 @@
 </div>
 
 <div id="page-formation" style="display:none;">
-  <div class="page-header"><h1>Formation</h1><p>Coming soon.</p></div>
+  <div class="page-header"><h1>Formation</h1><p>Build an XI from your saved squad using OVR, role skills, playstyles and special abilities.</p></div>
   <div class="page-body">
-    <div class="placeholder-page">
-      <div class="icon">⚽</div>
-      <p><b>Pitch-based formation builder — architecture planned, not built yet.</b></p>
-      <p style="max-width:420px;margin:10px auto;font-size:13px;">This will place your saved squad onto a real pitch layout (GK / DC-DMC-DML-DMR / MC-ML-MR / AMC-AML-AMR / ST), let you assign players to positions, and flag anyone playing outside their natural role — using the exact positions your squad data already supports. No fake formation data shown here in the meantime.</p>
+    <div class="formation-panel">
+      <div class="formation-toolbar">
+        <div><b id="formationName">No formation selected</b><div class="formation-summary" id="formationSummary">Press Team Select to analyse your squad.</div></div>
+        <button class="primary" id="teamSelectBtn">⚽ Team Select</button>
+      </div>
+      <div id="formationPitch" class="pitch">
+        <div class="pitch-line pitch-mid"></div><div class="pitch-line pitch-circle"></div>
+        <div class="pitch-line pitch-box-top"></div><div class="pitch-line pitch-box-bottom"></div>
+        <div class="pitch-line pitch-six-top"></div><div class="pitch-line pitch-six-bottom"></div>
+      </div>
+      <div class="formation-note">The selector scores each formation against your actual squad. It rewards natural-position fit first, then OVR and role-specific skills, with smaller bonuses for compatible playstyles and special abilities. It will not invent players or silently change their saved records.</div>
+      <div id="formationBench" class="formation-bench"></div>
     </div>
   </div>
 </div>
@@ -860,10 +907,59 @@ const SPECIAL_ABILITIES = {
   "Dribbler": {positions:["DMC","MR","ML","MC","AMR","AML","AMC","ST"], description:"Gives the player better control to beat defenders in tight spaces using individual skill."}
 };
 
+const PLAYSTYLES = {
+  "Goal Poacher": {positions:["ST"], description:"Focuses heavily on finding space in the box and finishing chances with high efficiency."},
+  "False Nine": {positions:["ST","AMC"], description:"Drops deep to link up play, pulling opposing central defenders out of position and switching between an attacker and a playmaker."},
+  "Target Man": {positions:["ST"], description:"Uses physical presence to hold up the ball, win aerial duels, and bring incoming wingers or midfielders into the attack."},
+  "Inside Forward": {positions:["AML","AMR"], description:"Cuts inside from the flanks toward the penalty area to shoot or create high-danger scoring opportunities."},
+  "False Winger": {positions:["ML","MR","AML","AMR"], description:"Operates wide but tucks inside or delays crosses to confuse fullbacks and create central passing lanes."},
+  "Box-to-Box": {positions:["MC"], description:"Covers immense ground, contributing actively to both defensive recovery and offensive support."},
+  "Regista": {positions:["MC","DMC"], description:"Acts as a deep-lying playmaker who dictates the tempo and launches attacks with precise long or short passes from deep areas."},
+  "Playmaker": {positions:["MC","AMC"], description:"Unlocks defences in the final third with visionary passing and decisive final-ball execution."},
+  "Ball Winner": {positions:["DMC","MC"], description:"Aggressively presses opponents, intercepts passes, and wins tackles to turn over possession."},
+  "Anchor Man": {positions:["DMC"], description:"Holds a disciplined position directly in front of the center-backs to shut down central threats."},
+  "Mezzala": {positions:["MC"], description:"Drifts into half-spaces during attacks to overload wide-central areas while maintaining central stability."},
+  "No-Nonsense DC": {positions:["DC"], description:"Clears the ball immediately under pressure without taking risks or playing fancy passes."},
+  "Stopper": {positions:["DC"], description:"Steps up aggressively to challenge attackers, excelling in tight marking and heavy tackling inside the box."},
+  "Ball-Playing DC": {positions:["DC"], description:"Combines defensive resilience with clean passing technique to initiate plays cleanly from the backline."},
+  "Full-Back / Wing-Back": {positions:["DL","DR"], description:"Patrols the flanks, supporting defensive shapes while overlapping to provide width and crosses."},
+  "Sweeper Keeper": {positions:["GK"], description:"Rushes off the line to sweep up through-balls and neutralize counter-attacks early."}
+};
+
 function normaliseAbilities(data){
   const known = Object.keys(SPECIAL_ABILITIES);
   const raw = Array.isArray(data?.specialAbilities) ? data.specialAbilities : (data?.specialAbility ? [data.specialAbility] : []);
   return raw.map(String).filter(a => known.includes(a)).slice(0,2);
+}
+
+function normalisePlaystyle(data){
+  const raw = data?.playstyle || data?.playStyle || '';
+  return Object.prototype.hasOwnProperty.call(PLAYSTYLES, raw) ? raw : '';
+}
+
+function renderPlaystylePicker(containerId, position, selected='', disabled=false){
+  const el=document.getElementById(containerId); if(!el) return;
+  const chosen=normalisePlaystyle({playstyle:selected});
+  const available=Object.entries(PLAYSTYLES).filter(([,p])=>p.positions.includes(position));
+  if(!available.length){ el.innerHTML='<div class="ability-empty">No playstyles are available for this position.</div>'; return; }
+  el.innerHTML=available.map(([name,p])=>{
+    const checked=chosen===name;
+    return `<label class="playstyle-option ${disabled?'disabled':''}"><input type="radio" name="${containerId}-playstyle" data-playstyle="${escapeHtml(name)}" ${checked?'checked':''} ${disabled?'disabled':''}><span><div class="playstyle-option-title">${escapeHtml(name)}</div><div class="playstyle-option-desc">${escapeHtml(p.description)}</div></span></label>`;
+  }).join('');
+  const countId=containerId==='addPlaystylePicker'?'addPlaystyleCount':null;
+  const update=()=>{ if(countId){const chosenNow=el.querySelector('input[data-playstyle]:checked'); document.getElementById(countId).textContent=`${chosenNow?1:0} / 1`;}};
+  el.querySelectorAll('input[data-playstyle]').forEach(box=>box.addEventListener('change',update));
+  update();
+}
+
+function getSelectedPlaystyle(containerId){
+  return document.querySelector(`#${containerId} input[data-playstyle]:checked`)?.getAttribute('data-playstyle') || '';
+}
+
+function renderPlaystyleChip(containerId, playstyle){
+  const el=document.getElementById(containerId); if(!el) return;
+  const value=normalisePlaystyle({playstyle});
+  el.innerHTML=value ? `<span class="playstyle-chip">${escapeHtml(value)}</span>` : '<div class="ability-empty">No playstyle assigned.</div>';
 }
 
 function renderAbilityPicker(containerId, position, selected=[], disabled=false){
@@ -904,6 +1000,7 @@ let trainingPlayerKey = null;
 let editingPlayerKey = null;
 let profileEditMode = false;
 let addPlayerSkills = {};
+let pendingPlayerImage = "";
 let disabledDrills = new Set();
 
 function isGK(pos){ return pos === 'GK'; }
@@ -1018,6 +1115,7 @@ document.getElementById('drillList').addEventListener('click', function(e){
 document.getElementById('posSelect').addEventListener('change', (e) => {
   currentPosition = e.target.value;
   renderAbilityPicker('addAbilityPicker', currentPosition, getSelectedAbilities('addAbilityPicker'), false);
+  renderPlaystylePicker('addPlaystylePicker', currentPosition, getSelectedPlaystyle('addPlaystylePicker'), false);
   renderAddSkillPreview(addPlayerSkills,currentPosition);
   renderSkillGroups();
   renderDrillList();
@@ -1354,105 +1452,28 @@ async function renderSquadGrid(){
   const emptyState = document.getElementById('squadEmptyState');
   if(!container) return;
   const players = await getAllPlayers();
-  const savedOrder = await getSquadOrder();
-  const orderMap = new Map(savedOrder.map((key, index) => [key, index]));
-  players.sort((a,b) => {
-    const ai = orderMap.has(a.key) ? orderMap.get(a.key) : Number.MAX_SAFE_INTEGER;
-    const bi = orderMap.has(b.key) ? orderMap.get(b.key) : Number.MAX_SAFE_INTEGER;
-    if(ai !== bi) return ai - bi;
-    return new Date(a.createdAt||a.updatedAt||0) - new Date(b.createdAt||b.updatedAt||0);
+  const positionOrder = {GK:1,DL:2,DC:3,DR:4,DML:5,DMC:6,DMR:7,ML:8,MC:9,MR:10,AML:11,AMC:12,AMR:13,ST:14};
+  players.sort((a,b)=>{
+    const ai=positionOrder[a.position]||99, bi=positionOrder[b.position]||99;
+    if(ai!==bi) return ai-bi;
+    return String(a.name||'').localeCompare(String(b.name||''),undefined,{sensitivity:'base'});
   });
-
-  // If older players have no saved order yet, initialise the order once in
-  // their current list order. New players are appended automatically.
-  const knownKeys = new Set(players.map(p => p.key));
-  const cleanedOrder = savedOrder.filter(k => knownKeys.has(k));
-  const missingKeys = players.map(p => p.key).filter(k => !cleanedOrder.includes(k));
-  const effectiveOrder = [...cleanedOrder, ...missingKeys];
-  if(effectiveOrder.length !== savedOrder.length || missingKeys.length){ await saveSquadOrder(effectiveOrder); }
-
-  if(players.length === 0){
-    container.innerHTML = '';
-    if(emptyState) emptyState.style.display = 'block';
-    return;
-  }
-  if(emptyState) emptyState.style.display = 'none';
-
+  if(players.length===0){ container.innerHTML=''; if(emptyState) emptyState.style.display='block'; return; }
+  if(emptyState) emptyState.style.display='none';
   container.innerHTML = players.map(p => {
-    const catColor = roleColorOf(p.position);
-    const incomplete = isIncompleteScan(p);
-    return `
-    <div class="squad-card" data-key="${p.key}">
-      <div class="squad-card-main">
-        <div class="squad-drag-handle" data-drag-handle="${p.key}" aria-label="Drag ${escapeHtml(p.name || 'player')} to reorder" title="Drag to reorder">⋮⋮</div>
-        <div class="squad-card-role" style="background:${catColor}22;color:${catColor};border:1px solid ${catColor}55;">${p.position || '?'}</div>
-        <div class="squad-card-info">
-          <div class="squad-name-row">
-            <div class="squad-card-name">${p.name || '(unnamed)'}</div>
-          </div>
-          <div class="squad-card-meta">${roleCategoryOf(p.position)}${p.ovr ? ' · OVR ' + escapeHtml(p.ovr) : ''}${p.age ? ' · Age ' + escapeHtml(p.age) : ''}${incomplete ? ' · <span style="color:var(--amber)">incomplete scan</span>' : ''}</div>
-          <div>${normaliseAbilities(p).map(a=>`<span class="ability-chip">${escapeHtml(a)}</span>`).join('')}</div>
-        </div>
-      </div>
-      <button class="squad-card-delete" data-key="${p.key}" data-label="${(p.name||p.key).replace(/"/g,'&quot;')}">✕</button>
+    const catColor=roleColorOf(p.position), incomplete=isIncompleteScan(p);
+    const face=p.profileImage ? `<img src="${p.profileImage}" alt="" style="width:42px;height:42px;border-radius:9px;object-fit:cover;object-position:center top;border:1px solid var(--line);flex:0 0 42px;">` : '';
+    return `<div class="squad-card" data-key="${escapeHtml(p.key)}">
+      <div class="squad-card-main">${face}<div class="squad-card-role" style="background:${catColor}22;color:${catColor};border:1px solid ${catColor}55;">${p.position||'?'}</div>
+        <div class="squad-card-info"><div class="squad-name-row"><div class="squad-card-name">${escapeHtml(p.name||'(unnamed)')}</div></div>
+        <div class="squad-card-meta">${roleCategoryOf(p.position)}${p.ovr?' · OVR '+escapeHtml(p.ovr):''}${p.age?' · Age '+escapeHtml(p.age):''}${incomplete?' · <span style="color:var(--amber)">incomplete scan</span>':''}</div>
+        <div>${normaliseAbilities(p).map(a=>`<span class="ability-chip">${escapeHtml(a)}</span>`).join('')}${normalisePlaystyle(p)?`<span class="playstyle-chip">${escapeHtml(normalisePlaystyle(p))}</span>`:''}</div></div></div>
+      <button class="squad-card-delete" data-key="${escapeHtml(p.key)}" data-label="${escapeHtml(p.name||p.key)}">✕</button>
     </div>`;
   }).join('');
 }
 
 let squadDrag = null;
-
-function clearSquadDrag(){
-  if(squadDrag?.card) squadDrag.card.classList.remove('dragging');
-  document.querySelectorAll('.squad-card.drop-target').forEach(el => el.classList.remove('drop-target'));
-  squadDrag = null;
-}
-
-function moveSquadCard(targetCard, clientY){
-  if(!squadDrag || !targetCard || targetCard === squadDrag.card) return;
-  const rect = targetCard.getBoundingClientRect();
-  const insertBefore = clientY < rect.top + rect.height / 2;
-  const list = document.getElementById('squadList');
-  if(insertBefore) list.insertBefore(squadDrag.card, targetCard);
-  else list.insertBefore(squadDrag.card, targetCard.nextSibling);
-  document.querySelectorAll('.squad-card.drop-target').forEach(el => el.classList.remove('drop-target'));
-  targetCard.classList.add('drop-target');
-}
-
-async function finishSquadDrag(){
-  if(!squadDrag) return;
-  const cards = [...document.querySelectorAll('#squadList .squad-card')];
-  const order = cards.map(card => card.getAttribute('data-key')).filter(Boolean);
-  await saveSquadOrder(order);
-  clearSquadDrag();
-}
-
-document.addEventListener('pointerdown', function(e){
-  const handle = e.target.closest('[data-drag-handle]');
-  if(!handle) return;
-  const card = handle.closest('.squad-card');
-  if(!card) return;
-  e.preventDefault();
-  squadDrag = {card, pointerId:e.pointerId, moved:false};
-  card.classList.add('dragging');
-  try{ handle.setPointerCapture(e.pointerId); }catch(_){}
-});
-
-document.addEventListener('pointermove', function(e){
-  if(!squadDrag || e.pointerId !== squadDrag.pointerId) return;
-  squadDrag.moved = true;
-  const target = document.elementFromPoint(e.clientX, e.clientY)?.closest('.squad-card');
-  if(target) moveSquadCard(target, e.clientY);
-});
-
-document.addEventListener('pointerup', function(e){
-  if(!squadDrag || e.pointerId !== squadDrag.pointerId) return;
-  finishSquadDrag();
-});
-
-document.addEventListener('pointercancel', function(e){
-  if(squadDrag && e.pointerId === squadDrag.pointerId) clearSquadDrag();
-});
-
 document.addEventListener('click', function(e){
   if(e.target.closest('[data-drag-handle]')) return;
   const delBtn = e.target.closest('.squad-card-delete');
@@ -1467,50 +1488,64 @@ document.addEventListener('click', function(e){
   }
 });
 
+function normalisePlayerName(name){ return String(name||'').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,''); }
+
+async function extractPlayerFace(dataUrl){
+  return new Promise((resolve)=>{
+    const img=new Image();
+    img.onload=()=>{
+      try{
+        const sx=img.width*0.17, sy=img.height*0.01, sw=img.width*0.14, sh=img.height*0.25;
+        const c=document.createElement('canvas'); c.width=256; c.height=256;
+        const ctx=c.getContext('2d'); ctx.fillStyle='#0b1420'; ctx.fillRect(0,0,256,256);
+        ctx.drawImage(img,sx,sy,sw,sh,0,0,256,256);
+        resolve(c.toDataURL('image/jpeg',0.82));
+      }catch(_){ resolve(''); }
+    };
+    img.onerror=()=>resolve(''); img.src=dataUrl;
+  });
+}
+
+async function findDuplicatePlayer(name, position, exceptKey=null){
+  const wanted=normalisePlayerName(name);
+  if(!wanted) return null;
+  const players=await getAllPlayers();
+  return players.find(p=>p.key!==exceptKey && normalisePlayerName(p.name)===wanted) || null;
+}
+
+function showToast(message, type='ok'){
+  let el=document.getElementById('appToast');
+  if(!el){el=document.createElement('div');el.id='appToast';el.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;max-width:calc(100vw - 32px);padding:11px 16px;border-radius:9px;font:600 12px JetBrains Mono,monospace;box-shadow:0 10px 30px rgba(0,0,0,.35);text-align:center;';document.body.appendChild(el);}
+  el.style.background=type==='err'?'#42151b':'#103c29'; el.style.color=type==='err'?'#ff9aa5':'#a8ffd0'; el.style.border='1px solid '+(type==='err'?'#ff5a6e':'#3ed98b'); el.textContent=message; el.style.display='block';
+  clearTimeout(el._timer); el._timer=setTimeout(()=>el.style.display='none',2600);
+}
+
 async function savePlayer(){
-  const statusEl = document.getElementById('saveStatus');
-  statusEl.className = 'scan-status';
-  if(!currentPosition){ statusEl.className='scan-status err'; statusEl.textContent = 'Pick a role first.'; return; }
-  const name = (document.getElementById('nameInput').value || '').trim();
-  if(!name){ statusEl.className='scan-status err'; statusEl.textContent = 'Enter a player name to save under.'; return; }
-  const slug = slugifyKey(name);
-  if(!slug){ statusEl.className='scan-status err'; statusEl.textContent = 'That name has no usable characters — try letters or numbers.'; return; }
-
-  // IMPORTANT: add/update mode owns its own explicit key. Profile edits never
-  // pass through this function, which prevents one player's data overwriting another.
-  const key = editingPlayerKey || `player:${slug}_${Date.now().toString(36)}`;
-  const selectedAbilities = getSelectedAbilities('addAbilityPicker');
-  const existing = await loadRawPlayer(key);
-  const createdAt = existing?.createdAt || new Date().toISOString();
-  const payload = {
-    ...(existing || {}),
-    name, position: currentPosition, skills: {...addPlayerSkills},
-    age: document.getElementById('ageInput').value.trim()==='' ? null : Number(document.getElementById('ageInput').value),
-    ovr: document.getElementById('ovrInput').value.trim()==='' ? null : Number(document.getElementById('ovrInput').value),
-    specialAbilities: selectedAbilities,
-    // Keep the legacy field empty so the old placeholder cannot come back.
-    specialAbility: '',
-    createdAt, updatedAt:new Date().toISOString()
-  };
-
-  statusEl.innerHTML = '<span class="spinner"></span>Saving…';
+  const statusEl=document.getElementById('saveStatus'); statusEl.className='scan-status';
+  if(!currentPosition){statusEl.className='scan-status err';statusEl.textContent='Pick a role first.';return;}
+  const name=(document.getElementById('nameInput').value||'').trim();
+  if(!name){statusEl.className='scan-status err';statusEl.textContent='Enter a player name to save under.';return;}
+  const duplicate=await findDuplicatePlayer(name,currentPosition,editingPlayerKey);
+  if(duplicate){statusEl.className='scan-status err';statusEl.textContent=`Duplicate player — ${duplicate.name} is already in My Squad.`;showToast('Player already exists in My Squad.','err');return;}
+  const slug=slugifyKey(name); if(!slug){statusEl.className='scan-status err';statusEl.textContent='That name has no usable characters — try letters or numbers.';return;}
+  const key=editingPlayerKey || `player:${slug}_${Date.now().toString(36)}`;
+  const selectedAbilities=getSelectedAbilities('addAbilityPicker');
+  const selectedPlaystyle=getSelectedPlaystyle('addPlaystylePicker');
+  const existing=await loadRawPlayer(key);
+  const createdAt=existing?.createdAt||new Date().toISOString();
+  const payload={...(existing||{}),name,position:currentPosition,skills:{...addPlayerSkills},age:document.getElementById('ageInput').value.trim()===''?null:Number(document.getElementById('ageInput').value),ovr:document.getElementById('ovrInput').value.trim()===''?null:Number(document.getElementById('ovrInput').value),specialAbilities:selectedAbilities,specialAbility:'',playstyle:selectedPlaystyle,profileImage:pendingPlayerImage||existing?.profileImage||'',createdAt,updatedAt:new Date().toISOString()};
+  statusEl.innerHTML='<span class="spinner"></span>Saving player…';
+  const btn=document.getElementById('saveBtn'); btn.disabled=true;
   try{
-    await window.storage.set(key, JSON.stringify(payload), false);
-    currentPlayerKey = key;
-    editingPlayerKey = null;
-    document.getElementById('saveBtn').textContent='💾 Save Player';
-  document.getElementById('addPlayerTitle').textContent='Add Player';
-  document.getElementById('addPlayerSubtitle').textContent='Upload a Skills screenshot, review the scan, choose their role and special abilities, then save them to My Squad.';
-    renderAddSkillPreview(payload.skills,payload.position);
-    await renderSquadGrid();
-    await populateTrainingPlayerPicker();
-    statusEl.className='scan-status ok';
-    statusEl.textContent = `Saved ✓ — ${name}`;
-  }catch(err){
-    console.error(err);
-    statusEl.className='scan-status err';
-    statusEl.textContent='Save failed: ' + (err.message || err);
-  }
+    await window.storage.set(key,JSON.stringify(payload),false);
+    currentPlayerKey=key; editingPlayerKey=null;
+    await renderSquadGrid(); await populateTrainingPlayerPicker();
+    statusEl.className='scan-status ok'; statusEl.textContent=`Saved ✓ — ${name}`;
+    showToast(`${name} saved successfully ✓`);
+    clearPlayerForm();
+    await openPlayerProfile(key,true);
+  }catch(err){console.error(err);statusEl.className='scan-status err';statusEl.textContent='Save failed: '+(err.message||err);showToast('Player could not be saved.','err');}
+  finally{btn.disabled=false;}
 }
 
 async function loadRawPlayer(key){
@@ -1596,8 +1631,9 @@ function handleFile(e){
   const file = e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
-  reader.onload = () => {
+  reader.onload = async () => {
     document.getElementById('previewRow').style.display = 'flex';
+    pendingPlayerImage = await extractPlayerFace(reader.result);
     document.getElementById('previewThumb').src = reader.result;
     scanImage(reader.result);
   };
@@ -2058,7 +2094,7 @@ document.getElementById('saveBtn').addEventListener('click', savePlayer);
 document.getElementById('buildBtn').addEventListener('click', buildSession);
 
 function clearPlayerForm(){
-  editingPlayerKey=null; currentPosition=''; addPlayerSkills={};
+  editingPlayerKey=null; currentPosition=''; addPlayerSkills={}; pendingPlayerImage='';
   document.getElementById('nameInput').value='';
   document.getElementById('ageInput').value='';
   document.getElementById('ovrInput').value='';
@@ -2072,6 +2108,8 @@ function clearPlayerForm(){
   document.getElementById('scanNote').style.display='none';
   document.getElementById('fileInput').value='';
   renderAbilityPicker('addAbilityPicker','',[],false);
+  renderPlaystylePicker('addPlaystylePicker','', '', false);
+  const psCount=document.getElementById('addPlaystyleCount'); if(psCount)psCount.textContent='0 / 1';
   const count=document.getElementById('addAbilityCount'); if(count)count.textContent='0 / 2';
   renderAddSkillPreview({},'');
   const loadStatus=document.getElementById('loadStatus');
@@ -2107,6 +2145,7 @@ function showPage(pageId, persist=true, options={}){
   if(pageId==='squad') renderSquadGrid();
   if(pageId==='add-player'){
     renderAbilityPicker('addAbilityPicker',currentPosition,getSelectedAbilities('addAbilityPicker'),false);
+    renderPlaystylePicker('addPlaystylePicker',currentPosition,getSelectedPlaystyle('addPlaystylePicker'),false);
     renderAddSkillPreview(addPlayerSkills,currentPosition);
   }
   if(pageId==='training') populateTrainingPlayerPicker(trainingPlayerKey);
@@ -2137,7 +2176,7 @@ if(hamburgerBtn) hamburgerBtn.addEventListener('click', toggleNavDrawer);
 const navDrawerOverlay = document.getElementById('navDrawerOverlay');
 if(navDrawerOverlay) navDrawerOverlay.addEventListener('click', closeNavDrawer);
 const navDrawerVersion = document.getElementById('navDrawerVersion');
-if(navDrawerVersion) navDrawerVersion.textContent = 'v2.8.0';
+if(navDrawerVersion) navDrawerVersion.textContent = 'v2.9.0';
 
 document.querySelectorAll('.nav-item').forEach(el => {
   el.addEventListener('click', () => { showPage(el.getAttribute('data-page')); closeNavDrawer(); });
@@ -2210,8 +2249,7 @@ async function renderDashboard(){
 async function savePlayerRecordByKey(key, changes){
   const data=await loadRawPlayer(key);
   if(!data) return false;
-  const updated={...data,...changes,updatedAt:new Date().toISOString(),specialAbilities:normaliseAbilities(changes)};
-  updated.specialAbility='';
+  const updated={...data,...changes,updatedAt:new Date().toISOString(),specialAbilities:normaliseAbilities(changes),playstyle:normalisePlaystyle(changes),specialAbility:''};
   await window.storage.set(key,JSON.stringify(updated),false);
   return updated;
 }
@@ -2250,6 +2288,9 @@ async function openPlayerProfile(key,pushHistory=true){
   document.getElementById('profileOvr').value=data.ovr??'';
   renderAbilityChips('profileAbilities',abilities);
   renderAbilityPicker('profileAbilityPicker',data.position||'',abilities,true);
+  renderPlaystyleChip('profilePlaystyle',data.playstyle);
+  renderPlaystylePicker('profilePlaystylePicker',data.position||'',data.playstyle||'',true);
+  const avatar=document.getElementById('profileAvatar'); if(avatar){avatar.src=data.profileImage||'';avatar.style.display=data.profileImage?'block':'none';}
   renderProfileSkills(data,false);
   setProfileEditMode(false);
   showPage('player',pushHistory);
@@ -2257,8 +2298,9 @@ async function openPlayerProfile(key,pushHistory=true){
 
 function renderProfileEditAbilities(data){
   const holder=document.getElementById('profileAbilities'); if(!holder) return;
-  holder.innerHTML='<div id="profileAbilityPicker"></div>';
+  holder.innerHTML='<div id="profileAbilityPicker"></div><div id="profilePlaystylePicker" class="playstyle-panel" style="margin-top:10px;"></div>';
   renderAbilityPicker('profileAbilityPicker',data.position||'',normaliseAbilities(data),false);
+  renderPlaystylePicker('profilePlaystylePicker',data.position||'',data.playstyle||'',false);
 }
 
 function goBackInApp(fallback='dashboard'){
@@ -2279,6 +2321,13 @@ if(profileEditBtn) profileEditBtn.addEventListener('click',async()=>{
 const profileCancelBtn=document.getElementById('profileCancelBtn');
 if(profileCancelBtn) profileCancelBtn.addEventListener('click',()=>openPlayerProfile(currentPlayerKey,true));
 
+const profilePositionEl=document.getElementById('profilePosition');
+if(profilePositionEl) profilePositionEl.addEventListener('change',()=>{
+  if(!profileEditMode) return;
+  const current=getSelectedPlaystyle('profilePlaystylePicker');
+  renderPlaystylePicker('profilePlaystylePicker',profilePositionEl.value,current,false);
+});
+
 const profileSaveBtn=document.getElementById('profileSaveBtn');
 if(profileSaveBtn) profileSaveBtn.addEventListener('click',async()=>{
   if(!currentPlayerKey)return;
@@ -2292,7 +2341,8 @@ if(profileSaveBtn) profileSaveBtn.addEventListener('click',async()=>{
     age:document.getElementById('profileAge').value.trim()===''?null:Number(document.getElementById('profileAge').value),
     ovr:document.getElementById('profileOvr').value.trim()===''?null:Number(document.getElementById('profileOvr').value),
     skills,
-    specialAbilities:getSelectedAbilities('profileAbilityPicker')
+    specialAbilities:getSelectedAbilities('profileAbilityPicker'),
+    playstyle:getSelectedPlaystyle('profilePlaystylePicker')
   };
   if(!changes.name){alert('Player name cannot be empty.');return;}
   try{
@@ -2313,8 +2363,9 @@ if(profileUpdateBtn) profileUpdateBtn.addEventListener('click',async()=>{
   document.getElementById('ovrInput').value=data.ovr??'';
   document.getElementById('posSelect').value=currentPosition;
   document.getElementById('playerTag').textContent=data.name?`— ${data.name}`:'';
-  addPlayerSkills={...(data.skills||{})};
+  addPlayerSkills={...(data.skills||{})}; pendingPlayerImage=data.profileImage||'';
   renderAbilityPicker('addAbilityPicker',currentPosition,normaliseAbilities(data),false);
+  renderPlaystylePicker('addPlaystylePicker',currentPosition,data.playstyle||'',false);
   renderAddSkillPreview(addPlayerSkills,currentPosition);
   document.getElementById('saveBtn').textContent='↻ Update Player';
   document.getElementById('addPlayerTitle').textContent='Update Player';
@@ -2366,6 +2417,101 @@ if(location.hash){const hp=location.hash.slice(1).split('?')[0];if(PAGES.include
 if(initialPage==='player' && initialPlayerKey) openPlayerProfile(initialPlayerKey,false);
 else showPage(PAGES.includes(initialPage)?initialPage:'dashboard',false);
 
+
+// ============================================================
+// FORMATION ENGINE
+// ============================================================
+const FORMATIONS = [
+  {name:'4-4-2', slots:['GK','DL','DC','DC','DR','ML','MC','MC','MR','ST','ST']},
+  {name:'4-3-3', slots:['GK','DL','DC','DC','DR','ML','MC','MR','AML','ST','AMR']},
+  {name:'4-2-3-1', slots:['GK','DL','DC','DC','DR','DMC','DMC','AML','AMC','AMR','ST']},
+  {name:'3-5-2', slots:['GK','DC','DC','DC','DML','DMC','DMR','MC','MC','ST','ST']},
+  {name:'4-5-1', slots:['GK','DL','DC','DC','DR','ML','MC','MC','MR','AMC','ST']},
+  {name:'4-1-2-1-2', slots:['GK','DL','DC','DC','DR','DMC','MC','MC','AMC','ST','ST']}
+];
+
+const PLAYSTYLE_BONUS = {
+  'Goal Poacher': ['ST'], 'False Nine':['ST','AMC'], 'Target Man':['ST'], 'Inside Forward':['AML','AMR'], 'False Winger':['ML','MR','AML','AMR'],
+  'Box-to-Box':['MC'], 'Regista':['MC','DMC'], 'Playmaker':['MC','AMC'], 'Ball Winner':['DMC','MC'], 'Anchor Man':['DMC'], 'Mezzala':['MC'],
+  'No-Nonsense DC':['DC'], 'Stopper':['DC'], 'Ball-Playing DC':['DC'], 'Full-Back / Wing-Back':['DL','DR'], 'Sweeper Keeper':['GK']
+};
+const ABILITY_BONUS = {
+  'One-on-One Stopper':['GK'],'Penalty Kick Stopper':['GK'],'Defensive Wall':['DR','DL','DC','DMR','DML'],'Aerial Defender':['DR','DL','DC','DMR','DML'],
+  'Playmaker':['DMC','MR','ML','MC','AMC'],'One-on-One Scorer':['AMR','AML','AMC','ST'],'Penalty Kick Specialist':['DMC','MR','ML','MC','AMR','AML','AMC','ST'],
+  'Free Kick Specialist':['DMC','MR','ML','MC','AMR','AML','AMC','ST'],'Corner Specialist':['DMC','MR','ML','MC','AMR','AML','AMC','ST'],'Shadow Striker':['AMR','AML','AMC','ST'],'Dribbler':['MR','ML','MC','AMR','AML','AMC','ST']
+};
+
+function formationPositionFit(playerPos, slot){
+  if(playerPos===slot) return 1;
+  const adjacent={GK:[],DL:['DR','DML'],DR:['DL','DMR'],DC:['DMC','DL','DR'],DML:['DL','DMC','ML'],DMR:['DR','DMC','MR'],DMC:['MC','DC','DML','DMR'],ML:['MR','MC','DML','AML'],MR:['ML','MC','DMR','AMR'],MC:['DMC','ML','MR','AMC'],AML:['AMR','ML','AMC'],AMR:['AML','MR','AMC'],AMC:['MC','AML','AMR','ST'],ST:['AMC','AMR','AML']};
+  return (adjacent[playerPos]||[]).includes(slot)?0.72:0.35;
+}
+
+function roleSkillScore(player, slot){
+  const s=player.skills||{}; const white=POSITION_WHITE[player.position]||[]; const keyBySlot={
+    GK:['Reflexes','Agility','Anticipation','Rushing Out','Communication'],DL:['Tackling','Marking','Positioning','Crossing','Speed'],DR:['Tackling','Marking','Positioning','Crossing','Speed'],
+    DC:['Tackling','Marking','Positioning','Heading','Bravery','Strength'],DML:['Tackling','Marking','Passing','Crossing','Strength'],DMR:['Tackling','Marking','Passing','Crossing','Strength'],DMC:['Tackling','Marking','Positioning','Passing','Bravery','Creativity'],
+    ML:['Passing','Dribbling','Crossing','Speed','Creativity'],MR:['Passing','Dribbling','Crossing','Speed','Creativity'],MC:['Passing','Positioning','Tackling','Dribbling','Creativity','Fitness'],
+    AML:['Passing','Dribbling','Crossing','Shooting','Finishing','Speed'],AMR:['Passing','Dribbling','Crossing','Shooting','Finishing','Speed'],AMC:['Passing','Dribbling','Shooting','Finishing','Creativity','Speed'],ST:['Positioning','Shooting','Finishing','Heading','Strength','Speed']
+  };
+  const keys=keyBySlot[slot]||white; const vals=keys.map(k=>Number(s[k]||0)).filter(v=>v>0); if(!vals.length) return 0;
+  return vals.reduce((a,b)=>a+b,0)/vals.length;
+}
+
+function playerSlotScore(player,slot){
+  const fit=formationPositionFit(player.position,slot);
+  const ovr=Number(player.ovr||0);
+  const skill=roleSkillScore(player,slot);
+  const style=normalisePlaystyle(player);
+  const abilities=normaliseAbilities(player);
+  const styleBonus=(style && (PLAYSTYLE_BONUS[style]||[]).includes(slot))?12:0;
+  const abilityBonus=abilities.reduce((sum,a)=>sum+((ABILITY_BONUS[a]||[]).includes(slot)?4:0),0);
+  return fit*(ovr*0.48+skill*0.40)+styleBonus+abilityBonus;
+}
+
+function assignFormation(players, formation){
+  const remaining=[...players], chosen=[];
+  for(const slot of formation.slots){
+    let best=null,bestScore=-Infinity,bestIndex=-1;
+    remaining.forEach((p,i)=>{const score=playerSlotScore(p,slot); if(score>bestScore){best=p;bestScore=score;bestIndex=i;}});
+    if(best){chosen.push({player:best,slot,score:bestScore}); remaining.splice(bestIndex,1);} 
+  }
+  const total=chosen.reduce((sum,x)=>sum+x.score,0);
+  const exact=chosen.filter(x=>x.player.position===x.slot).length;
+  return {chosen,remaining,total,exact};
+}
+
+function chooseBestFormation(players){
+  if(players.length<11) return {error:`You need at least 11 players. You currently have ${players.length}.`};
+  return FORMATIONS.map(f=>({formation:f,...assignFormation(players,f)})).sort((a,b)=>b.total-a.total)[0];
+}
+
+function renderFormation(result){
+  const pitch=document.getElementById('formationPitch'), bench=document.getElementById('formationBench'); if(!pitch||!bench) return;
+  pitch.querySelectorAll('.pitch-player').forEach(e=>e.remove());
+  const coords={GK:[50,92],DL:[17,74],DC:[39,78],DR:[83,74],DML:[15,55],DMC:[50,59],DMR:[85,55],ML:[17,39],MC:[50,39],MR:[83,39],AML:[18,21],AMC:[50,22],AMR:[82,21],ST:[50,7]};
+  const duplicateOffset={};
+  result.chosen.forEach(({player,slot})=>{
+    const base=coords[slot]||[50,50], idx=duplicateOffset[slot]||0; duplicateOffset[slot]=idx+1;
+    const offsets=[[0,0],[-7,2],[7,2]]; const off=offsets[idx]||[0,0];
+    const el=document.createElement('div'); el.className='pitch-player'; el.style.left=(base[0]+off[0])+'%'; el.style.top=(base[1]+off[1])+'%';
+    el.title=`${player.name} · ${slot} · OVR ${player.ovr||'—'}`;
+    el.innerHTML=`<div class="pitch-player-dot">${player.profileImage?`<img src="${player.profileImage}" alt="">`:'⚽'}</div><div class="pitch-player-name">${escapeHtml(player.name||'Player')}</div><div class="pitch-player-role">${slot} · ${player.ovr||'—'}</div>`;
+    el.addEventListener('click',()=>openPlayerProfile(player.key)); pitch.appendChild(el);
+  });
+  bench.innerHTML=result.remaining.slice(0,8).map(p=>`<div class="bench-card"><b>${escapeHtml(p.name||'Player')}</b><br><span>${escapeHtml(p.position||'?')} · OVR ${escapeHtml(p.ovr||'—')}${normalisePlaystyle(p)?' · '+escapeHtml(normalisePlaystyle(p)):''}</span></div>`).join('');
+}
+
+async function runTeamSelect(){
+  const players=await getAllPlayers(); const result=chooseBestFormation(players);
+  if(result.error){document.getElementById('formationName').textContent='Not enough players';document.getElementById('formationSummary').textContent=result.error;showToast(result.error,'err');return;}
+  document.getElementById('formationName').textContent=result.formation.name;
+  document.getElementById('formationSummary').textContent=`${result.exact}/11 natural-position picks · weighted team score ${Math.round(result.total)} · playstyles and abilities included`;
+  renderFormation(result);
+  try{await window.storage.set('formation:last',JSON.stringify({formation:result.formation.name,chosen:result.chosen.map(x=>({key:x.player.key,slot:x.slot})),updatedAt:new Date().toISOString()}),false);}catch(_){}
+}
+
+const teamSelectBtn=document.getElementById('teamSelectBtn'); if(teamSelectBtn) teamSelectBtn.addEventListener('click',runTeamSelect);
 
 // ============================================================
 // MENTORS — real data transcribed from your own screenshots,
