@@ -1574,18 +1574,19 @@ function detectHeaderMetadata(words, rows, rawText, imageHeight=1000, imageWidth
   // The old detector searched the whole screenshot and therefore happily
   // selected "DEFENCE ATTACK PHYSICAL" as a name. Restricting the candidate
   // area to the upper ~32% and excluding every skill/group label prevents that.
-  const headerCutoff = imageHeight * 0.30;
-  const nameCutoff = imageHeight * 0.18;
+  const headerCutoff = imageHeight * 0.34;
   const candidates = [];
   sortedRows.forEach(row => {
-    if(row.cy > nameCutoff) return;
+    if(row.cy > headerCutoff) return;
     const toks = row.words.map(w=>w.text.trim())
       .filter(t=>/^[A-Za-z][A-Za-z'’.-]{1,}$/.test(t));
     const clean = toks.filter(t=>{
       const low=t.toLowerCase();
       return !blocked.has(low) && !positions.has(t.toUpperCase()) && !/^(ovr|age|roles?)$/i.test(t);
     });
-    if(clean.length < 1 || clean.length > 4) return;
+    // A real Top Eleven player name is normally at least two words. Never
+    // accept a lone OCR token (e.g. a random 'Karen' hallucination) as a name.
+    if(clean.length < 2 || clean.length > 3) return;
     const minX = Math.min(...row.words.map(w => w.bbox.x0));
     const maxX = Math.max(...row.words.map(w => w.bbox.x1));
     const center = (minX+maxX)/2;
@@ -1593,7 +1594,7 @@ function detectHeaderMetadata(words, rows, rawText, imageHeight=1000, imageWidth
     const conf = confs.reduce((a,b)=>a+b,0)/confs.length;
     // Names are normally left/centre aligned in the player header, not a
     // full-width section heading. Prefer 2-word names and readable OCR.
-    const score = (clean.length === 2 ? 55 : clean.length === 3 ? 35 : 8)
+    const score = (clean.length === 2 ? 65 : 42)
       + conf * 0.35
       + (center < imageWidth*0.62 ? 15 : 0)
       - (center > imageWidth*0.78 ? 25 : 0)
@@ -1606,56 +1607,53 @@ function detectHeaderMetadata(words, rows, rawText, imageHeight=1000, imageWidth
   // Reject obvious OCR artefacts and common UI phrases even if they slipped
   // through the token filter.
   if(name && /^(defence|defense|attack|physical)(\s+(defence|defense|attack|physical)){0,2}$/i.test(name)) name='';
-  if(name && candidates[0] && candidates[0].conf < 35) name='';
+  if(name && candidates[0] && candidates[0].conf < 50) name='';
 
-  // OVR is displayed immediately after the OVR label in the player header.
-  // Prefer a direct OCR-text match first, then fall back to geometry around the label.
+  // OVR gets its own detector. First try the literal OCR text for the very
+  // common 'OVR 116' pattern, then fall back to the spatial label/number
+  // detector. This prevents unrelated numbers elsewhere in the skills grid
+  // being mistaken for OVR.
   let ovr = null;
-  const ovrText = String(rawText || '').replace(/\s+/g, ' ');
-  const ovrMatch = ovrText.match(/\bOVR\s*[:=]?\s*(\d{2,3})\b/i);
-  if(ovrMatch) ovr = Number(ovrMatch[1]);
+  const rawOvr = String(rawText || '').match(/\bOVR\s*[:=\-]?\s*(\d{2,3})\b/i);
+  if(rawOvr) ovr = Number(rawOvr[1]);
   if(ovr === null) ovr = findHeaderNumber(sortedRows, /^OVR:?$/i);
+  if(ovr !== null && (ovr < 1 || ovr > 300)) ovr = null;
   const age = findHeaderNumber(sortedRows, /^Age:?$/i);
 
-  const specialAbility = '';
+  let specialAbility = '';
+  for(const row of sortedRows){
+    if(row.cy > headerCutoff) break;
+    const idx = row.words.findIndex(w => /^special$/i.test(w.text.trim()));
+    if(idx >= 0){
+      const tail = row.words.slice(idx+1).map(w=>w.text.trim()).filter(t=>/^[A-Za-z][A-Za-z -]{2,}$/.test(t));
+      const text = tail.join(' ').replace(/\s+/g,' ').trim();
+      if(text && !/^ability$/i.test(text)) { specialAbility = text; break; }
+    }
+  }
   return {name, age, ovr, specialAbility};
 }
 
 async function makeHeaderOCR(dataUrl){
-  // Focus on the player header. Use two enlarged OCR passes: one sparse-text
-  // pass for names/labels and one block pass that is particularly useful for
-  // the small OVR number next to the OVR label.
+  // Run a second, focused OCR pass over the player-header area. This is much
+  // more reliable for Name / Age / OVR than asking one OCR pass to understand
+  // the entire skills grid at once.
   return new Promise((resolve,reject)=>{
     const img = new Image();
     img.onload = async () => {
       try{
-        const h = Math.max(1, Math.floor(img.height * 0.32));
-        const scale = 4;
+        const h = Math.max(1, Math.floor(img.height * 0.36));
         const c = document.createElement('canvas');
+        const scale = 2;
         c.width = img.width * scale;
         c.height = h * scale;
         const ctx = c.getContext('2d', {willReadFrequently:true});
-        ctx.imageSmoothingEnabled = true;
         ctx.drawImage(img, 0, 0, img.width, h, 0, 0, c.width, c.height);
-        const headerUrl = c.toDataURL('image/png');
-        const configs = [
-          { tessedit_pageseg_mode: '11' },
-          { tessedit_pageseg_mode: '6' }
-        ];
-        const results = [];
-        for(const config of configs){
-          const r = await Tesseract.recognize(headerUrl, 'eng', { logger:()=>{}, config });
-          results.push(r.data);
-        }
-        const words = [];
-        const texts = [];
-        results.forEach(d=>{
-          texts.push(d.text || '');
-          (d.words || []).forEach(w=>{
-            if(w.text && w.text.trim() && (w.confidence === undefined || w.confidence > 15)) words.push(w);
-          });
+        const headerUrl = c.toDataURL('image/jpeg', 0.92);
+        const r = await Tesseract.recognize(headerUrl, 'eng', {
+          logger: ()=>{},
+          config: { tessedit_pageseg_mode: '11' }
         });
-        resolve({words, text:texts.join(' ') });
+        resolve(r.data);
       }catch(e){ reject(e); }
     };
     img.onerror=()=>reject(new Error('Could not prepare header image'));
@@ -1783,6 +1781,7 @@ async function scanImage(dataUrl){
     const detectedName = headerMeta.name;
     const detectedAge = headerMeta.age;
     const detectedOvr = headerMeta.ovr;
+    const detectedSpecialAbility = headerMeta.specialAbility;
 
     if(detectedRole && POSITION_WHITE[detectedRole]){
       document.getElementById('posSelect').value = detectedRole;
@@ -1791,11 +1790,12 @@ async function scanImage(dataUrl){
 
     if(detectedAge !== null) document.getElementById('ageInput').value = detectedAge;
     if(detectedOvr !== null) document.getElementById('ovrInput').value = detectedOvr;
+    if(detectedSpecialAbility) document.getElementById('specialInput').value = detectedSpecialAbility;
 
     // Name handling: never silently overwrite a name that's already in the
     // field (e.g. you Loaded a player, then rescanned their new screenshot —
     // OCR misreading their name slightly shouldn't cost you that link). If
-    // the field is empty, a confident single-word-or-more detection can fill
+    // the field is empty, a confident multi-word detection can fill
     // it directly. Either way, show what was detected as a tappable suggestion
     // so you can always see and correct it rather than guess what happened.
     const nameField = document.getElementById('nameInput');
@@ -1829,11 +1829,12 @@ async function scanImage(dataUrl){
     if(!detectedName) missingMeta.push('name');
     if(detectedAge === null) missingMeta.push('age');
     if(detectedOvr === null) missingMeta.push('OVR');
+    if(!detectedSpecialAbility) missingMeta.push('special ability (often icon-only)');
     if(!detectedRole) missingMeta.push('role');
     if(missingMeta.length){
       note.style.display = 'flex';
       note.className = 'note warn';
-      note.innerHTML = `⚠️ <span>Couldn't confidently read: <b>${missingMeta.join(', ')}</b>. Check the fields before saving.</span>`;
+      note.innerHTML = `⚠️ <span>Couldn't confidently read: <b>${missingMeta.join(', ')}</b>. Check the fields before saving. Special ability is often shown as an icon in Top Eleven, so it may need to be entered manually.</span>`;
     }
 
     const matchedCount = Object.keys(foundSkills).length;
