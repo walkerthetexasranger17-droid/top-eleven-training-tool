@@ -509,7 +509,6 @@
     <div class="player-meta-grid">
       <div class="player-meta-field"><label>Age</label><input type="number" id="ageInput" min="1" max="100" inputmode="numeric" placeholder="—"></div>
       <div class="player-meta-field"><label>OVR</label><input type="number" id="ovrInput" min="1" max="300" inputmode="numeric" placeholder="—"></div>
-      <div class="player-meta-field"><label>Stars</label><input type="number" id="starsInput" min="1" max="10" step="0.5" inputmode="decimal" placeholder="—"></div>
       <div class="player-meta-field"><label>Special ability</label><input type="text" id="specialInput" placeholder="—"></div>
     </div>
     <div class="scan-status" id="saveStatus" style="margin-top:6px;"></div>
@@ -613,7 +612,6 @@
     <div class="profile-summary">
       <div class="summary-box"><div class="summary-label">Age</div><div class="summary-value" id="profileAge">—</div></div>
       <div class="summary-box"><div class="summary-label">OVR</div><div class="summary-value" id="profileOvr">—</div></div>
-      <div class="summary-box"><div class="summary-label">Stars</div><div class="summary-value" id="profileStars">—</div></div>
       <div class="summary-box"><div class="summary-label">Special ability</div><div class="summary-value" id="profileSpecial">—</div></div>
     </div>
     <div id="profileBars" class="bars"></div>
@@ -1271,7 +1269,7 @@ async function renderSquadGrid(){
           <div class="squad-name-row">
             <div class="squad-card-name">${p.name || '(unnamed)'}</div>
           </div>
-          <div class="squad-card-meta">${roleCategoryOf(p.position)}${p.ovr ? ' · OVR ' + escapeHtml(p.ovr) : ''}${p.age ? ' · Age ' + escapeHtml(p.age) : ''}${p.stars ? ' · ★' + escapeHtml(p.stars) : ''}${incomplete ? ' · <span style="color:var(--amber)">incomplete scan</span>' : ''}</div>
+          <div class="squad-card-meta">${roleCategoryOf(p.position)}${p.ovr ? ' · OVR ' + escapeHtml(p.ovr) : ''}${p.age ? ' · Age ' + escapeHtml(p.age) : ''}${incomplete ? ' · <span style="color:var(--amber)">incomplete scan</span>' : ''}</div>
         </div>
       </div>
       <button class="squad-card-delete" data-key="${p.key}" data-label="${(p.name||p.key).replace(/"/g,'&quot;')}">✕</button>
@@ -1369,13 +1367,11 @@ async function savePlayer(){
 
   const ageRaw = document.getElementById('ageInput').value.trim();
   const ovrRaw = document.getElementById('ovrInput').value.trim();
-  const starsRaw = document.getElementById('starsInput').value.trim();
   const specialAbility = (document.getElementById('specialInput').value || '').trim();
   const payload = {
     name, position: currentPosition, skills: getCurrentSkills(),
     age: ageRaw === '' ? null : Number(ageRaw),
     ovr: ovrRaw === '' ? null : Number(ovrRaw),
-    stars: starsRaw === '' ? null : Number(starsRaw),
     specialAbility,
     createdAt, updatedAt: new Date().toISOString()
   };
@@ -1422,7 +1418,6 @@ async function loadPlayerByKey(key){
     document.getElementById('nameInput').value = data.name || '';
     document.getElementById('ageInput').value = data.age ?? '';
     document.getElementById('ovrInput').value = data.ovr ?? '';
-    document.getElementById('starsInput').value = data.stars ?? '';
     document.getElementById('specialInput').value = data.specialAbility || '';
     document.getElementById('playerTag').textContent = data.name ? `— ${data.name}` : '';
     if(loadStatus){ loadStatus.className = 'scan-status ok'; loadStatus.textContent = `Loaded ✓ — ${data.name || key}`; }
@@ -1579,10 +1574,11 @@ function detectHeaderMetadata(words, rows, rawText, imageHeight=1000, imageWidth
   // The old detector searched the whole screenshot and therefore happily
   // selected "DEFENCE ATTACK PHYSICAL" as a name. Restricting the candidate
   // area to the upper ~32% and excluding every skill/group label prevents that.
-  const headerCutoff = imageHeight * 0.34;
+  const headerCutoff = imageHeight * 0.30;
+  const nameCutoff = imageHeight * 0.18;
   const candidates = [];
   sortedRows.forEach(row => {
-    if(row.cy > headerCutoff) return;
+    if(row.cy > nameCutoff) return;
     const toks = row.words.map(w=>w.text.trim())
       .filter(t=>/^[A-Za-z][A-Za-z'’.-]{1,}$/.test(t));
     const clean = toks.filter(t=>{
@@ -1612,51 +1608,54 @@ function detectHeaderMetadata(words, rows, rawText, imageHeight=1000, imageWidth
   if(name && /^(defence|defense|attack|physical)(\s+(defence|defense|attack|physical)){0,2}$/i.test(name)) name='';
   if(name && candidates[0] && candidates[0].conf < 35) name='';
 
-  const ovr = findHeaderNumber(sortedRows, /^OVR:?$/i);
+  // OVR is displayed immediately after the OVR label in the player header.
+  // Prefer a direct OCR-text match first, then fall back to geometry around the label.
+  let ovr = null;
+  const ovrText = String(rawText || '').replace(/\s+/g, ' ');
+  const ovrMatch = ovrText.match(/\bOVR\s*[:=]?\s*(\d{2,3})\b/i);
+  if(ovrMatch) ovr = Number(ovrMatch[1]);
+  if(ovr === null) ovr = findHeaderNumber(sortedRows, /^OVR:?$/i);
   const age = findHeaderNumber(sortedRows, /^Age:?$/i);
 
-  let stars = null;
-  const starMatch = String(rawText||'').match(/(?:stars?\s*[:=]?\s*)(\d+(?:\.5)?)/i);
-  if(starMatch) stars = Number(starMatch[1]);
-  if(stars === null){
-    const symbolMatch = String(rawText||'').match(/(★{1,10}|\*{2,10})/);
-    if(symbolMatch) stars = symbolMatch[1].replace(/\*/g,'★').length;
-  }
-
-  let specialAbility = '';
-  for(const row of sortedRows){
-    if(row.cy > headerCutoff) break;
-    const idx = row.words.findIndex(w => /^special$/i.test(w.text.trim()));
-    if(idx >= 0){
-      const tail = row.words.slice(idx+1).map(w=>w.text.trim()).filter(t=>/^[A-Za-z][A-Za-z -]{2,}$/.test(t));
-      const text = tail.join(' ').replace(/\s+/g,' ').trim();
-      if(text && !/^ability$/i.test(text)) { specialAbility = text; break; }
-    }
-  }
-  return {name, age, ovr, stars, specialAbility};
+  const specialAbility = '';
+  return {name, age, ovr, specialAbility};
 }
 
 async function makeHeaderOCR(dataUrl){
-  // Run a second, focused OCR pass over the player-header area. This is much
-  // more reliable for Name / Age / OVR than asking one OCR pass to understand
-  // the entire skills grid at once.
+  // Focus on the player header. Use two enlarged OCR passes: one sparse-text
+  // pass for names/labels and one block pass that is particularly useful for
+  // the small OVR number next to the OVR label.
   return new Promise((resolve,reject)=>{
     const img = new Image();
     img.onload = async () => {
       try{
-        const h = Math.max(1, Math.floor(img.height * 0.36));
+        const h = Math.max(1, Math.floor(img.height * 0.32));
+        const scale = 4;
         const c = document.createElement('canvas');
-        const scale = 2;
         c.width = img.width * scale;
         c.height = h * scale;
         const ctx = c.getContext('2d', {willReadFrequently:true});
+        ctx.imageSmoothingEnabled = true;
         ctx.drawImage(img, 0, 0, img.width, h, 0, 0, c.width, c.height);
-        const headerUrl = c.toDataURL('image/jpeg', 0.92);
-        const r = await Tesseract.recognize(headerUrl, 'eng', {
-          logger: ()=>{},
-          config: { tessedit_pageseg_mode: '11' }
+        const headerUrl = c.toDataURL('image/png');
+        const configs = [
+          { tessedit_pageseg_mode: '11' },
+          { tessedit_pageseg_mode: '6' }
+        ];
+        const results = [];
+        for(const config of configs){
+          const r = await Tesseract.recognize(headerUrl, 'eng', { logger:()=>{}, config });
+          results.push(r.data);
+        }
+        const words = [];
+        const texts = [];
+        results.forEach(d=>{
+          texts.push(d.text || '');
+          (d.words || []).forEach(w=>{
+            if(w.text && w.text.trim() && (w.confidence === undefined || w.confidence > 15)) words.push(w);
+          });
         });
-        resolve(r.data);
+        resolve({words, text:texts.join(' ') });
       }catch(e){ reject(e); }
     };
     img.onerror=()=>reject(new Error('Could not prepare header image'));
@@ -1778,15 +1777,12 @@ async function scanImage(dataUrl){
         name: focused.name || headerMeta.name,
         age: focused.age ?? headerMeta.age,
         ovr: focused.ovr ?? headerMeta.ovr,
-        stars: focused.stars ?? headerMeta.stars,
         specialAbility: focused.specialAbility || headerMeta.specialAbility
       };
     }catch(_){ /* full-image OCR result is still usable */ }
     const detectedName = headerMeta.name;
     const detectedAge = headerMeta.age;
     const detectedOvr = headerMeta.ovr;
-    const detectedStars = headerMeta.stars;
-    const detectedSpecialAbility = headerMeta.specialAbility;
 
     if(detectedRole && POSITION_WHITE[detectedRole]){
       document.getElementById('posSelect').value = detectedRole;
@@ -1795,8 +1791,6 @@ async function scanImage(dataUrl){
 
     if(detectedAge !== null) document.getElementById('ageInput').value = detectedAge;
     if(detectedOvr !== null) document.getElementById('ovrInput').value = detectedOvr;
-    if(detectedStars !== null) document.getElementById('starsInput').value = detectedStars;
-    if(detectedSpecialAbility) document.getElementById('specialInput').value = detectedSpecialAbility;
 
     // Name handling: never silently overwrite a name that's already in the
     // field (e.g. you Loaded a player, then rescanned their new screenshot —
@@ -1835,13 +1829,11 @@ async function scanImage(dataUrl){
     if(!detectedName) missingMeta.push('name');
     if(detectedAge === null) missingMeta.push('age');
     if(detectedOvr === null) missingMeta.push('OVR');
-    if(detectedStars === null) missingMeta.push('stars');
-    if(!detectedSpecialAbility) missingMeta.push('special ability (often icon-only)');
     if(!detectedRole) missingMeta.push('role');
     if(missingMeta.length){
       note.style.display = 'flex';
       note.className = 'note warn';
-      note.innerHTML = `⚠️ <span>Couldn't confidently read: <b>${missingMeta.join(', ')}</b>. Check the fields before saving. Special ability is often shown as an icon in Top Eleven, so it may need to be entered manually.</span>`;
+      note.innerHTML = `⚠️ <span>Couldn't confidently read: <b>${missingMeta.join(', ')}</b>. Check the fields before saving.</span>`;
     }
 
     const matchedCount = Object.keys(foundSkills).length;
@@ -1866,7 +1858,6 @@ function clearPlayerForm(){
   document.getElementById('nameInput').value = '';
   document.getElementById('ageInput').value = '';
   document.getElementById('ovrInput').value = '';
-  document.getElementById('starsInput').value = '';
   document.getElementById('specialInput').value = '';
   document.getElementById('playerTag').textContent = '';
   document.getElementById('posSelect').value = '';
@@ -1995,7 +1986,6 @@ async function openPlayerProfile(key){
     (data.updatedAt ? ' · updated ' + new Date(data.updatedAt).toLocaleDateString() : '');
   document.getElementById('profileAge').textContent = data.age ?? '—';
   document.getElementById('profileOvr').textContent = data.ovr ?? '—';
-  document.getElementById('profileStars').textContent = data.stars ? ('★' + data.stars) : '—';
   document.getElementById('profileSpecial').textContent = data.specialAbility || '—';
 
   const white = POSITION_WHITE[data.position] || [];
