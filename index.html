@@ -582,7 +582,7 @@
 
 
 <div id="page-player" style="display:none;">
-  <div class="page-header"><h1>Player Profile</h1><p>Full attribute breakdown. Bright = white/key skill for this role.</p></div>
+  <div class="page-header"><button class="small" id="profileBackBtn" style="margin-bottom:12px;">← Back to My Squad</button><h1>Player Profile</h1><p>Full attribute breakdown. Bright = white/key skill for this role.</p></div>
   <div class="page-body">
     <div class="profile-head">
       <div>
@@ -1148,6 +1148,18 @@ function roleCategoryOf(pos){
   return 'Unknown';
 }
 
+
+function roleColorOf(pos){
+  const colors = {
+    GK:'#4AA8FF',
+    DL:'#3ED98B', DC:'#3ED98B', DR:'#3ED98B',
+    DMC:'#FFD84A', DMR:'#FFD84A', DML:'#FFD84A',
+    ML:'#FFD84A', MR:'#FFD84A', MC:'#FFD84A',
+    AML:'#FF5A6E', AMR:'#FF5A6E', AMC:'#FF5A6E', ST:'#FF5A6E'
+  };
+  return colors[pos] || '#8A9AAA';
+}
+
 function escapeHtml(value){
   return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -1227,16 +1239,16 @@ async function renderSquadGrid(){
   if(emptyState) emptyState.style.display = 'none';
 
   container.innerHTML = players.map(p => {
-    const catColor = p.position === 'GK' ? '#4AA8FF' : (POSITION_WHITE[p.position] ? '#3ED98B' : 'var(--ink-faint)');
+    const catColor = roleColorOf(p.position);
     const incomplete = isIncompleteScan(p);
     return `
     <div class="squad-card" data-key="${p.key}">
       <div class="squad-card-main">
+        <div class="squad-drag-handle" data-drag-handle="${p.key}" aria-label="Drag ${escapeHtml(p.name || 'player')} to reorder" title="Drag to reorder">⋮⋮</div>
         <div class="squad-card-role" style="background:${catColor}22;color:${catColor};border:1px solid ${catColor}55;">${p.position || '?'}</div>
         <div class="squad-card-info">
           <div class="squad-name-row">
             <div class="squad-card-name">${p.name || '(unnamed)'}</div>
-            <div class="squad-drag-handle" data-drag-handle="${p.key}" aria-label="Drag ${escapeHtml(p.name || 'player')} to reorder" title="Drag to reorder">⋮⋮</div>
           </div>
           <div class="squad-card-meta">${roleCategoryOf(p.position)}${incomplete ? ' · <span style="color:var(--amber)">incomplete scan</span>' : ''}</div>
         </div>
@@ -1680,6 +1692,7 @@ renderDrillList();
 const PAGES = ['dashboard','squad','training','player','formation','mentors','tactics','settings'];
 
 function showPage(pageId){
+  try{ localStorage.setItem('te:lastPage', pageId); }catch(_){}
   PAGES.forEach(p => {
     const el = document.getElementById('page-' + p);
     if(el) el.style.display = (p === pageId) ? 'block' : 'none';
@@ -1776,6 +1789,7 @@ async function openPlayerProfile(key){
   const data = await loadPlayerByKey(key);
   if(!data) return;
   currentPlayerKey = key;
+  try{ localStorage.setItem('te:lastPlayerKey', key); }catch(_){}
 
   document.getElementById('profileName').textContent = data.name || '(unnamed)';
   document.getElementById('profileRole').textContent = data.position || '?';
@@ -1798,6 +1812,9 @@ async function openPlayerProfile(key){
 
   showPage('player');
 }
+
+const profileBackBtn = document.getElementById('profileBackBtn');
+if(profileBackBtn) profileBackBtn.addEventListener('click', () => { showPage('squad'); });
 
 const profileEditBtn = document.getElementById('profileEditBtn');
 if(profileEditBtn) profileEditBtn.addEventListener('click', () => { showPage('training'); });
@@ -1823,10 +1840,18 @@ if(trainingPlayerSelect){
   trainingPlayerSelect.addEventListener('change', e => selectTrainingPlayer(e.target.value));
 }
 
-// Initial load
+// Initial load — restore the last page instead of always returning to Dashboard.
+let initialPage = 'dashboard';
+try{
+  const savedPage = localStorage.getItem('te:lastPage');
+  if(savedPage && PAGES.includes(savedPage)) initialPage = savedPage;
+}catch(_){}
 renderDashboard();
 renderSquadGrid();
-showPage('dashboard');
+showPage(initialPage);
+if(initialPage === 'player'){
+  try{ const savedPlayerKey = localStorage.getItem('te:lastPlayerKey'); if(savedPlayerKey) openPlayerProfile(savedPlayerKey); }catch(_){}
+}
 
 
 // ============================================================
