@@ -120,6 +120,24 @@
   button.small.danger{color:var(--red);border-color:rgba(255,90,110,.4);}
   button.small.danger:hover{box-shadow:0 0 14px rgba(255,90,110,0.25);}
 
+  .ability-panel{background:rgba(7,18,29,.46);border:1px solid var(--line);border-radius:10px;padding:12px;}
+  .ability-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;}
+  .ability-panel-head b{font-family:'Barlow Condensed',sans-serif;font-size:16px;text-transform:uppercase;}
+  .ability-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--turf);white-space:nowrap;}
+  .ability-option{display:flex;align-items:flex-start;gap:10px;background:var(--bg-raised);border:1px solid var(--line);border-radius:8px;padding:9px 10px;margin-bottom:7px;cursor:pointer;}
+  .ability-option:hover{border-color:var(--blue-dim);}
+  .ability-option input{margin-top:3px;accent-color:var(--turf);}
+  .ability-option.disabled{opacity:.42;cursor:not-allowed;}
+  .ability-option-title{font-weight:700;font-size:13px;}
+  .ability-option-desc{font-size:11.5px;color:var(--ink-dim);line-height:1.4;margin-top:2px;}
+  .ability-chip{display:inline-flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:10.5px;padding:4px 7px;border-radius:5px;background:rgba(57,255,106,.08);border:1px solid var(--turf-dim);color:var(--turf);margin:4px 5px 0 0;}
+  .ability-empty{font-size:12px;color:var(--ink-faint);padding-top:5px;}
+  .profile-role-select{background:var(--bg-raised);border:1px solid var(--line);color:var(--blue);border-radius:7px;padding:7px 9px;font-family:'JetBrains Mono',monospace;font-weight:700;}
+  .profile-role-select:disabled{opacity:1;}
+  .profile-actions,.profile-edit-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px;}
+  .profile-actions .small,.profile-edit-actions .small{flex:1;min-width:115px;}
+  .profile-skill-input{width:64px;background:transparent;border:1px solid var(--line);border-radius:5px;color:var(--turf);font-family:'JetBrains Mono',monospace;font-weight:700;text-align:right;padding:4px 5px;}
+  .profile-skill-input:focus{outline:none;border-color:var(--turf);}
   .skill-group{margin-bottom:16px;}
   .skill-group-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px;}
   .skill-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -438,6 +456,7 @@
 <nav class="nav-drawer" id="navDrawer">
 <div class="nav-item" data-page="dashboard"><span class="nav-icon">&#9635;</span><span>Dashboard</span></div>
 <div class="nav-item" data-page="squad"><span class="nav-icon">&#9636;</span><span>My Squad</span></div>
+<div class="nav-item" data-page="add-player"><span class="nav-icon">＋</span><span>Add Player</span></div>
 <div class="nav-item" data-page="training"><span class="nav-icon">&#9673;</span><span>Training</span></div>
 <div class="nav-item" data-page="formation"><span class="nav-icon">&#9917;</span><span>Formation</span></div>
 <div class="nav-item" data-page="mentors"><span class="nav-icon">&#127891;</span><span>Mentors</span></div>
@@ -469,7 +488,19 @@
 
 
 <div id="page-squad" style="display:none;">
-  <div class="page-header"><h1>My Squad</h1><p>Scan and save your players here, then tap one to view and edit their profile.</p></div>
+  <div class="page-header"><h1>My Squad</h1><p>Your saved players. Tap a player to open their independent profile.</p></div>
+  <div class="page-body">
+    <section style="padding-top:0;">
+      <button class="primary" id="squadAddPlayerBtn">＋ Add Player</button>
+    </section>
+    <div id="squadEmptyState" class="empty-state" style="display:none;">No players saved yet — add your first player to get started.</div>
+    <div id="squadList"></div>
+    <div class="scan-status" id="loadStatus" style="margin-top:10px;"></div>
+  </div>
+</div>
+
+<div id="page-add-player" style="display:none;">
+  <div class="page-header"><h1 id="addPlayerTitle">Add Player</h1><p id="addPlayerSubtitle">Upload a Skills screenshot, review the scan, choose their role and special abilities, then save them to My Squad.</p></div>
   <div class="page-body">
   <section>
     <div class="section-head"><h2>Player screenshot</h2></div>
@@ -505,18 +536,24 @@
     <div class="name-suggest-box" id="nameSuggestBox" style="display:none;"></div>
     <div class="save-row">
       <input type="text" id="nameInput" placeholder="Player name, for saving">
-      <button class="small" id="saveBtn">💾 Save</button>
+      <button class="small" id="saveBtn">💾 Save Player</button>
     </div>
     <div class="player-meta-grid">
       <div class="player-meta-field"><label>Age</label><input type="number" id="ageInput" min="1" max="100" inputmode="numeric" placeholder="—"></div>
       <div class="player-meta-field"><label>OVR</label><input type="number" id="ovrInput" min="1" max="300" inputmode="numeric" placeholder="—"></div>
-      <div class="player-meta-field"><label>Special ability</label><input type="text" id="specialInput" placeholder="—"></div>
+    </div>
+    <div class="ability-panel" style="margin-top:12px;">
+      <div class="ability-panel-head"><div><b>Special abilities</b><div class="sub">Manual selection only — choose up to 2. The screenshot scan will never assign one.</div></div><span class="ability-count" id="addAbilityCount">0 / 2</span></div>
+      <div id="addAbilityPicker"></div>
     </div>
     <div class="scan-status" id="saveStatus" style="margin-top:6px;"></div>
   </section>
-    <div id="squadEmptyState" class="empty-state" style="display:none;">No players saved yet — upload a player screenshot above to get started.</div>
-    <div id="squadList"></div>
-    <div class="scan-status" id="loadStatus" style="margin-top:10px;"></div>
+
+  <section>
+    <div class="section-head"><h2>Scanned skills</h2></div>
+    <p class="sub" style="margin-bottom:14px;">These values belong to this player and are saved with their profile. Training will only load them after you explicitly select a player.</p>
+    <div id="addSkillPreview"></div>
+  </section>
   </div>
 </div>
 
@@ -600,30 +637,36 @@
 
 
 <div id="page-player" style="display:none;">
-  <div class="page-header"><h1>Player Profile</h1><p>Full attribute breakdown. Bright = white/key skill for this role.</p></div>
+  <div class="page-header"><h1>Player Profile</h1><p id="profileIntro">View this player's data. Changes made here belong only to this player.</p></div>
   <div class="page-body">
     <button class="small profile-back" id="profileBackBtn">← Back to My Squad</button>
     <div class="profile-head">
       <div>
-        <input class="profile-edit-name" type="text" id="profileName" placeholder="Player name">
+        <input class="profile-edit-name" type="text" id="profileName" placeholder="Player name" disabled>
         <div style="color:var(--ink-dim);font-size:12.5px;margin-top:4px;" id="profileMeta"></div>
       </div>
-      <span class="profile-role-badge" id="profileRole">—</span>
+      <select class="profile-role-select" id="profilePosition" disabled>
+        <option value="">— Role —</option><option value="GK">GK</option><option value="DR">DR</option><option value="DL">DL</option><option value="DC">DC</option><option value="DMR">DMR</option><option value="DML">DML</option><option value="DMC">DMC</option><option value="MR">MR</option><option value="ML">ML</option><option value="MC">MC</option><option value="AMR">AMR</option><option value="AML">AML</option><option value="AMC">AMC</option><option value="ST">ST</option>
+      </select>
     </div>
     <div class="profile-summary">
-      <div class="summary-box"><div class="summary-label">Age</div><input class="profile-edit-input" type="number" id="profileAge" min="1" max="100" placeholder="—"></div>
-      <div class="summary-box"><div class="summary-label">OVR</div><input class="profile-edit-input" type="number" id="profileOvr" min="1" max="300" placeholder="—"></div>
-      <div class="summary-box"><div class="summary-label">Special ability</div><input class="profile-edit-input" type="text" id="profileSpecial" placeholder="—"></div>
+      <div class="summary-box"><div class="summary-label">Age</div><input class="profile-edit-input" type="number" id="profileAge" min="1" max="100" placeholder="—" disabled></div>
+      <div class="summary-box"><div class="summary-label">OVR</div><input class="profile-edit-input" type="number" id="profileOvr" min="1" max="300" placeholder="—" disabled></div>
+      <div class="summary-box" style="grid-column:span 2;"><div class="summary-label">Special abilities</div><div id="profileAbilities"></div></div>
     </div>
     <div id="profileBars" class="bars"></div>
-    <div style="display:flex;gap:10px;margin-top:20px;">
-      <button class="small" id="profileSaveBtn" style="flex:1;color:var(--turf);border-color:var(--turf-dim);">Save Changes</button>
-      <button class="small" id="profileEditBtn" style="flex:1;color:var(--blue);border-color:var(--blue-dim);">Rescan / Replace Photo</button>
-      <button class="small danger" id="profileDeleteBtn" style="flex:1;">Delete Player</button>
+    <div class="profile-actions" id="profileActions">
+      <button class="small" id="profileEditBtn" style="color:var(--blue);border-color:var(--blue-dim);">✎ Edit</button>
+      <button class="small" id="profileUpdateBtn" style="color:var(--turf);border-color:var(--turf-dim);">↻ Update</button>
+      <button class="small" id="profileTrainingBtn" style="color:var(--turf);border-color:var(--turf-dim);">⚽ Training Session</button>
+      <button class="small danger" id="profileDeleteBtn">Delete</button>
+    </div>
+    <div class="profile-edit-actions" id="profileEditActions" style="display:none;">
+      <button class="small" id="profileCancelBtn">Cancel</button>
+      <button class="small" id="profileSaveBtn" style="color:var(--turf);border-color:var(--turf-dim);">Save Changes</button>
     </div>
   </div>
 </div>
-
 
 <div id="page-formation" style="display:none;">
   <div class="page-header"><h1>Formation</h1><p>Coming soon.</p></div>
@@ -803,8 +846,64 @@ const CATEGORY_COLORS = {
   "Physical": "#4AA8FF"
 };
 
+const SPECIAL_ABILITIES = {
+  "Playmaker": {positions:["DMC","MR","ML","MC","AMC"], description:"Helps transition the ball smoothly from defense to attack, increasing assist potential and controlling the pace."},
+  "One-on-One Scorer": {positions:["AMR","AML","AMC","ST"], description:"Gives your striker an advantage when facing the goalkeeper alone in scoring situations."},
+  "One-on-One Stopper": {positions:["GK"], description:"Improves the goalkeeper's performance when an opponent breaks through the defensive line for a direct one-on-one shot."},
+  "Penalty Kick Specialist": {positions:["DMC","MR","ML","MC","AMR","AML","AMC","ST"], description:"Increases accuracy and success rates when taking penalty kicks."},
+  "Penalty Kick Stopper": {positions:["GK"], description:"Boosts the goalkeeper's chance of saving a penalty kick."},
+  "Free Kick Specialist": {positions:["DMC","MR","ML","MC","AMR","AML","AMC","ST"], description:"Increases the accuracy and danger level of direct free kick shots on goal."},
+  "Corner Specialist": {positions:["DMC","MR","ML","MC","AMR","AML","AMC","ST"], description:"Improves the precision of corner kicks, leading to higher chance creation for headers."},
+  "Defensive Wall": {positions:["DR","DL","DC","DMR","DML"], description:"Helps block long-range shots and direct free kicks effectively when positioned properly."},
+  "Aerial Defender": {positions:["DR","DL","DC","DMR","DML"], description:"Enhances defensive capability during high balls, crosses, and aerial duels inside the box."},
+  "Shadow Striker": {positions:["DMC","MR","ML","MC","AMR","AML","AMC","ST"], description:"Allows a midfielder or secondary attacker to make surprise late runs into the penalty area to score."},
+  "Dribbler": {positions:["DMC","MR","ML","MC","AMR","AML","AMC","ST"], description:"Gives the player better control to beat defenders in tight spaces using individual skill."}
+};
+
+function normaliseAbilities(data){
+  const known = Object.keys(SPECIAL_ABILITIES);
+  const raw = Array.isArray(data?.specialAbilities) ? data.specialAbilities : (data?.specialAbility ? [data.specialAbility] : []);
+  return raw.map(String).filter(a => known.includes(a)).slice(0,2);
+}
+
+function renderAbilityPicker(containerId, position, selected=[], disabled=false){
+  const el=document.getElementById(containerId); if(!el) return;
+  const chosen=normaliseAbilities({specialAbilities:selected});
+  const available=Object.entries(SPECIAL_ABILITIES).filter(([,a])=>a.positions.includes(position));
+  if(!available.length){ el.innerHTML='<div class="ability-empty">No special abilities are available for this position.</div>'; return; }
+  el.innerHTML=available.map(([name,a])=>{
+    const checked=chosen.includes(name);
+    return `<label class="ability-option ${disabled?'disabled':''}"><input type="checkbox" data-ability="${escapeHtml(name)}" ${checked?'checked':''} ${disabled?'disabled':''}><span><div class="ability-option-title">${escapeHtml(name)}</div><div class="ability-option-desc">${escapeHtml(a.description)}</div></span></label>`;
+  }).join('');
+  const update=()=>{
+    const boxes=[...el.querySelectorAll('input[data-ability]')];
+    const checked=boxes.filter(x=>x.checked);
+    if(checked.length>2){ checked[checked.length-1].checked=false; return; }
+    boxes.forEach(x=>x.closest('.ability-option')?.classList.toggle('disabled', disabled || (checked.length>=2 && !x.checked)));
+    const countId=containerId==='addAbilityPicker'?'addAbilityCount':null;
+    if(countId) document.getElementById(countId).textContent=`${checked.length} / 2`;
+  };
+  el.querySelectorAll('input[data-ability]').forEach(box=>box.addEventListener('change',update));
+  update();
+}
+
+function getSelectedAbilities(containerId){
+  return [...document.querySelectorAll(`#${containerId} input[data-ability]:checked`)].map(x=>x.getAttribute('data-ability')).slice(0,2);
+}
+
+function renderAbilityChips(containerId, abilities){
+  const el=document.getElementById(containerId); if(!el) return;
+  const list=normaliseAbilities({specialAbilities:abilities});
+  el.innerHTML=list.length ? list.map(a=>`<span class="ability-chip">${escapeHtml(a)}</span>`).join('') : '<div class="ability-empty">No special abilities assigned.</div>';
+}
+
+
 let currentPosition = "";
 let currentPlayerKey = null;
+let trainingPlayerKey = null;
+let editingPlayerKey = null;
+let profileEditMode = false;
+let addPlayerSkills = {};
 let disabledDrills = new Set();
 
 function isGK(pos){ return pos === 'GK'; }
@@ -839,6 +938,11 @@ function cleanDrillsFor(pos){
 
 function renderSkillGroups(){
   const wrap = document.getElementById('skillGroups');
+  if(!wrap) return;
+  if(!trainingPlayerKey){
+    wrap.innerHTML='<div class="ability-empty">Select a player above to load their saved skills.</div>';
+    return;
+  }
   const white = POSITION_WHITE[currentPosition] || [];
   const groups = groupsFor(currentPosition);
   const defaults = defaultsFor(currentPosition);
@@ -913,6 +1017,8 @@ document.getElementById('drillList').addEventListener('click', function(e){
 
 document.getElementById('posSelect').addEventListener('change', (e) => {
   currentPosition = e.target.value;
+  renderAbilityPicker('addAbilityPicker', currentPosition, getSelectedAbilities('addAbilityPicker'), false);
+  renderAddSkillPreview(addPlayerSkills,currentPosition);
   renderSkillGroups();
   renderDrillList();
 });
@@ -1159,6 +1265,7 @@ async function getAllPlayers(){
     try{
       const r = await window.storage.get(k, false);
       const data = r ? JSON.parse(r.value) : null;
+      if(data){ data.specialAbilities=normaliseAbilities(data); data.specialAbility=''; }
       return data ? {...data, key: k} : null;
     }catch(_){ return null; }
   }));
@@ -1185,34 +1292,38 @@ function escapeHtml(value){
   return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-async function populateTrainingPlayerPicker(selectedKey = currentPlayerKey){
+async function populateTrainingPlayerPicker(selectedKey = trainingPlayerKey){
   const select = document.getElementById('trainingPlayerSelect');
   if(!select) return;
   const players = await getAllPlayers();
   players.sort((a,b) => String(a.name||'').localeCompare(String(b.name||''), undefined, {sensitivity:'base'}));
-  const previous = selectedKey || select.value || currentPlayerKey || '';
+  const previous = selectedKey || '';
   select.innerHTML = '<option value="">— Select a player —</option>' + players.map(p => {
     const key = p.key || '';
     const label = `${p.name || '(unnamed)'}${p.position ? ' · ' + p.position : ''}`;
     return `<option value="${escapeHtml(key)}">${escapeHtml(label)}</option>`;
   }).join('');
   if(previous && players.some(p => p.key === previous)) select.value = previous;
+  else select.value='';
+}
+
+function clearTrainingView(message='Select a saved player to load their skills.'){
+  trainingPlayerKey=null;
+  currentPosition='';
+  const select=document.getElementById('trainingPlayerSelect'); if(select) select.value='';
+  renderSkillGroups();
+  renderDrillList();
+  const results=document.getElementById('results'); if(results) results.style.display='none';
+  const status=document.getElementById('trainingPlayerStatus');
+  if(status){status.className='scan-status';status.textContent=message;}
 }
 
 async function selectTrainingPlayer(key){
-  const status = document.getElementById('trainingPlayerStatus');
-  if(!key){
-    currentPlayerKey = null;
-    currentPosition = '';
-    renderSkillGroups();
-    renderDrillList();
-    document.getElementById('results').style.display = 'none';
-    if(status){ status.className = 'scan-status'; status.textContent = 'Select a saved player to load their skills.'; }
-    return;
-  }
-  const data = await loadPlayerByKey(key);
-  if(!data) return;
-  currentPlayerKey = key;
+  if(!key){ clearTrainingView(); return; }
+  const data = await loadRawPlayer(key);
+  if(!data){ clearTrainingView('Could not load that player.'); return; }
+  trainingPlayerKey = key;
+  currentPosition = data.position || '';
   renderSkillGroups();
   Object.entries(data.skills || {}).forEach(([skill,val]) => {
     const el = document.getElementById(`skill-${skill}`);
@@ -1220,7 +1331,15 @@ async function selectTrainingPlayer(key){
   });
   renderDrillList();
   document.getElementById('results').style.display = 'none';
+  const status = document.getElementById('trainingPlayerStatus');
   if(status){ status.className = 'scan-status ok'; status.textContent = `Loaded ✓ — ${data.name || 'Player'} (${data.position || '?'})`; }
+}
+
+function renderAddSkillPreview(skills={}, position=''){
+  const el=document.getElementById('addSkillPreview'); if(!el) return;
+  if(!position){el.innerHTML='<div class="ability-empty">Scan a player to see their detected skills here.</div>';return;}
+  const groups=groupsFor(position); const white=POSITION_WHITE[position]||[];
+  el.innerHTML=Object.entries(groups).map(([group,names])=>`<div class="skill-group"><div class="skill-group-label">${escapeHtml(group)}</div><div class="skill-grid">${names.map(skill=>{const val=Number(skills[skill]??0);return `<div class="skill-cell ${white.includes(skill)?'white':'grey'}"><label>${escapeHtml(skill)}</label><strong style="font-family:'JetBrains Mono',monospace;color:${white.includes(skill)?'var(--turf)':'var(--ink-faint)'}">${val}</strong></div>`;}).join('')}</div></div>`).join('');
 }
 
 function isIncompleteScan(player){
@@ -1272,6 +1391,7 @@ async function renderSquadGrid(){
             <div class="squad-card-name">${p.name || '(unnamed)'}</div>
           </div>
           <div class="squad-card-meta">${roleCategoryOf(p.position)}${p.ovr ? ' · OVR ' + escapeHtml(p.ovr) : ''}${p.age ? ' · Age ' + escapeHtml(p.age) : ''}${incomplete ? ' · <span style="color:var(--amber)">incomplete scan</span>' : ''}</div>
+          <div>${normaliseAbilities(p).map(a=>`<span class="ability-chip">${escapeHtml(a)}</span>`).join('')}</div>
         </div>
       </div>
       <button class="squad-card-delete" data-key="${p.key}" data-label="${(p.name||p.key).replace(/"/g,'&quot;')}">✕</button>
@@ -1355,81 +1475,72 @@ async function savePlayer(){
   if(!name){ statusEl.className='scan-status err'; statusEl.textContent = 'Enter a player name to save under.'; return; }
   const slug = slugifyKey(name);
   if(!slug){ statusEl.className='scan-status err'; statusEl.textContent = 'That name has no usable characters — try letters or numbers.'; return; }
-  // When editing an existing player, keep their storage key even if their name changes.
-  // This prevents duplicate players and preserves squad ordering.
-  const key = currentPlayerKey || `player:${slug}`;
 
-  // Preserve createdAt across re-saves of the same player; only set it fresh
-  // for a genuinely new entry. This is additive to the existing data shape —
-  // old records without these fields still load fine, they just won't have
-  // a created/updated date to show on the dashboard.
-  let createdAt = new Date().toISOString();
-  try{
-    const existing = await window.storage.get(key, false);
-    if(existing){ const old = JSON.parse(existing.value); if(old.createdAt) createdAt = old.createdAt; }
-  }catch(_){}
-
-  const ageRaw = document.getElementById('ageInput').value.trim();
-  const ovrRaw = document.getElementById('ovrInput').value.trim();
-  const specialAbility = (document.getElementById('specialInput').value || '').trim();
+  // IMPORTANT: add/update mode owns its own explicit key. Profile edits never
+  // pass through this function, which prevents one player's data overwriting another.
+  const key = editingPlayerKey || `player:${slug}_${Date.now().toString(36)}`;
+  const selectedAbilities = getSelectedAbilities('addAbilityPicker');
+  const existing = await loadRawPlayer(key);
+  const createdAt = existing?.createdAt || new Date().toISOString();
   const payload = {
-    name, position: currentPosition, skills: getCurrentSkills(),
-    age: ageRaw === '' ? null : Number(ageRaw),
-    ovr: ovrRaw === '' ? null : Number(ovrRaw),
-    specialAbility,
-    createdAt, updatedAt: new Date().toISOString()
+    ...(existing || {}),
+    name, position: currentPosition, skills: {...addPlayerSkills},
+    age: document.getElementById('ageInput').value.trim()==='' ? null : Number(document.getElementById('ageInput').value),
+    ovr: document.getElementById('ovrInput').value.trim()==='' ? null : Number(document.getElementById('ovrInput').value),
+    specialAbilities: selectedAbilities,
+    // Keep the legacy field empty so the old placeholder cannot come back.
+    specialAbility: '',
+    createdAt, updatedAt:new Date().toISOString()
   };
 
   statusEl.innerHTML = '<span class="spinner"></span>Saving…';
-  for(let attempt=1; attempt<=2; attempt++){
-    try{
-      await window.storage.set(key, JSON.stringify(payload), false);
-      currentPlayerKey = key;
-      await renderSquadGrid();
-      await populateTrainingPlayerPicker(key);
-      statusEl.className = 'scan-status ok';
-      statusEl.textContent = `Saved ✓ — ${name} updated.`;
-      return;
-    }catch(err){
-      console.error(`save attempt ${attempt} failed`, err);
-      if(attempt === 2){
-        statusEl.className = 'scan-status err';
-        statusEl.textContent = 'Save failed: ' + (err.message || err) + ' — try again in a moment.';
-      } else {
-        await new Promise(r => setTimeout(r, 800));
-      }
-    }
+  try{
+    await window.storage.set(key, JSON.stringify(payload), false);
+    currentPlayerKey = key;
+    editingPlayerKey = null;
+    document.getElementById('saveBtn').textContent='💾 Save Player';
+  document.getElementById('addPlayerTitle').textContent='Add Player';
+  document.getElementById('addPlayerSubtitle').textContent='Upload a Skills screenshot, review the scan, choose their role and special abilities, then save them to My Squad.';
+    renderAddSkillPreview(payload.skills,payload.position);
+    await renderSquadGrid();
+    await populateTrainingPlayerPicker();
+    statusEl.className='scan-status ok';
+    statusEl.textContent = `Saved ✓ — ${name}`;
+  }catch(err){
+    console.error(err);
+    statusEl.className='scan-status err';
+    statusEl.textContent='Save failed: ' + (err.message || err);
   }
+}
+
+async function loadRawPlayer(key){
+  try{ const r=await window.storage.get(key,false); return r ? JSON.parse(r.value) : null; }catch(_){ return null; }
 }
 
 async function loadPlayerByKey(key){
   const loadStatus = document.getElementById('loadStatus');
-  if(!key){ if(loadStatus){ loadStatus.className='scan-status err'; loadStatus.textContent = 'No player specified.'; } return false; }
+  if(!key){ if(loadStatus){ loadStatus.className='scan-status err'; loadStatus.textContent='No player specified.'; } return false; }
   try{
-    const res = await window.storage.get(key, false);
-    if(!res){ if(loadStatus){ loadStatus.className='scan-status err'; loadStatus.textContent = 'Nothing found for that entry.'; } return false; }
-    const data = JSON.parse(res.value);
-    currentPosition = data.position;
-    currentPlayerKey = key;
-    try{ localStorage.setItem('te:lastPlayerKey', key); }catch(_){}
-    document.getElementById('posSelect').value = currentPosition;
-    renderSkillGroups();
-    Object.entries(data.skills || {}).forEach(([skill,val]) => {
-      const el = document.getElementById(`skill-${skill}`);
-      if(el) el.value = val;
-    });
-    renderDrillList();
-    document.getElementById('nameInput').value = data.name || '';
-    document.getElementById('ageInput').value = data.age ?? '';
-    document.getElementById('ovrInput').value = data.ovr ?? '';
-    document.getElementById('specialInput').value = data.specialAbility || '';
-    document.getElementById('playerTag').textContent = data.name ? `— ${data.name}` : '';
-    if(loadStatus){ loadStatus.className = 'scan-status ok'; loadStatus.textContent = `Loaded ✓ — ${data.name || key}`; }
+    const data=await loadRawPlayer(key);
+    if(!data){ if(loadStatus){loadStatus.className='scan-status err';loadStatus.textContent='Nothing found for that player.';} return false; }
+    data.specialAbilities=normaliseAbilities(data);
+    data.specialAbility='';
+    currentPlayerKey=key;
+    if(document.getElementById('posSelect')){
+      currentPosition=data.position||'';
+      document.getElementById('posSelect').value=currentPosition;
+    }
+    if(document.getElementById('nameInput')) document.getElementById('nameInput').value=data.name||'';
+    if(document.getElementById('ageInput')) document.getElementById('ageInput').value=data.age??'';
+    if(document.getElementById('ovrInput')) document.getElementById('ovrInput').value=data.ovr??'';
+    if(document.getElementById('playerTag')) document.getElementById('playerTag').textContent=data.name?`— ${data.name}`:'';
+    renderAbilityPicker('addAbilityPicker',data.position||'',data.specialAbilities,false);
+    renderAddSkillPreview(data.skills||{},data.position||'');
+    if(loadStatus){loadStatus.className='scan-status ok';loadStatus.textContent=`Loaded ✓ — ${data.name||key}`;}
     return data;
   }catch(err){
-    if(loadStatus){ loadStatus.className = 'scan-status err'; loadStatus.textContent = 'Load failed: ' + (err.message || err); }
-    console.error(err);
-    return false;
+    if(loadStatus){loadStatus.className='scan-status err';loadStatus.textContent='Load failed: '+(err.message||err);}
+    console.error(err); return false;
   }
 }
 
@@ -1706,7 +1817,51 @@ async function makeHeaderOCR(dataUrl){
   });
 }
 
+async function makeOvrOCR(dataUrl){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.onload=async()=>{
+      try{
+        // The OVR block is consistently in the upper-left portion of the Top Eleven
+        // player header. A tight crop prevents skill values such as 137/167/152
+        // from competing with the actual OVR. Multiple preprocessing variants
+        // handle the gold background and white stylised digits.
+        const sx=img.width*0.22, sy=img.height*0.12, sw=img.width*0.16, sh=img.height*0.11;
+        const c=document.createElement('canvas'); c.width=Math.max(1,Math.floor(sw*4)); c.height=Math.max(1,Math.floor(sh*4));
+        const ctx=c.getContext('2d',{willReadFrequently:true}); ctx.drawImage(img,sx,sy,sw,sh,0,0,c.width,c.height);
+        const base=ctx.getImageData(0,0,c.width,c.height);
+        const variants=[];
+        const gray=new Uint8ClampedArray(c.width*c.height*4);
+        for(let i=0;i<base.data.length;i+=4){
+          const y=0.299*base.data[i]+0.587*base.data[i+1]+0.114*base.data[i+2];
+          const v=Math.max(0,Math.min(255,(y-75)*2.2)); gray[i]=gray[i+1]=gray[i+2]=v; gray[i+3]=255;
+        }
+        const gc=document.createElement('canvas'); gc.width=c.width; gc.height=c.height; gc.getContext('2d').putImageData(new ImageData(gray,c.width,c.height),0,0);
+        variants.push(c.toDataURL('image/png'),gc.toDataURL('image/png'));
+        let best=null;
+        for(const url of variants){
+          const r=await Tesseract.recognize(url,'eng',{logger:()=>{},config:{tessedit_pageseg_mode:'11',tessedit_char_whitelist:'0123456789OVR'}});
+          const text=String(r.data?.text||'');
+          const matches=[...text.matchAll(/(?<!\d)(\d{2,3})(?!\d)/g)].map(m=>Number(m[1])).filter(n=>n>=50&&n<=300);
+          const words=(r.data?.words||[]).map(w=>({text:String(w.text||''),confidence:Number(w.confidence)||0,bbox:w.bbox}));
+          for(const w of words){ const n=Number(String(w.text).replace(/[^0-9]/g,'')); if(n>=50&&n<=300) matches.push(n); }
+          if(matches.length){
+            // Prefer the most common candidate; in this crop there should only be
+            // one real 2–3 digit value.
+            const counts={}; matches.forEach(n=>counts[n]=(counts[n]||0)+1);
+            const candidate=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0];
+            best=Number(candidate); break;
+          }
+        }
+        resolve(best);
+      }catch(e){reject(e);}
+    };
+    img.onerror=()=>reject(new Error('Could not prepare OVR crop')); img.src=dataUrl;
+  });
+}
+
 async function scanImage(dataUrl){
+  const preservedAbilities=getSelectedAbilities('addAbilityPicker');
   const status = document.getElementById('scanStatus');
   const note = document.getElementById('scanNote');
   note.style.display = 'none';
@@ -1823,10 +1978,14 @@ async function scanImage(dataUrl){
         specialAbility: focused.specialAbility || headerMeta.specialAbility
       };
     }catch(_){ /* full-image OCR result is still usable */ }
+    // Final OVR rescue pass. This is intentionally independent from the normal
+    // header OCR because the large white OVR digits are often segmented poorly
+    // by full-screen OCR even though they are visually obvious.
+    try{ const rescueOvr=await makeOvrOCR(dataUrl); if(rescueOvr!==null) headerMeta.ovr=rescueOvr; }catch(_){ }
     const detectedName = headerMeta.name;
     const detectedAge = headerMeta.age;
     const detectedOvr = headerMeta.ovr;
-    const detectedSpecialAbility = headerMeta.specialAbility;
+    const detectedSpecialAbility = '';
 
     if(detectedRole && POSITION_WHITE[detectedRole]){
       document.getElementById('posSelect').value = detectedRole;
@@ -1835,7 +1994,6 @@ async function scanImage(dataUrl){
 
     if(detectedAge !== null) document.getElementById('ageInput').value = detectedAge;
     if(detectedOvr !== null) document.getElementById('ovrInput').value = detectedOvr;
-    if(detectedSpecialAbility) document.getElementById('specialInput').value = detectedSpecialAbility;
 
     // Name handling: never silently overwrite a name that's already in the
     // field (e.g. you Loaded a player, then rescanned their new screenshot —
@@ -1863,18 +2021,17 @@ async function scanImage(dataUrl){
       }
     }
 
+    addPlayerSkills={};
+    Object.entries(foundSkills).forEach(([skill,val]) => { addPlayerSkills[skill]=val; });
+    renderAddSkillPreview(addPlayerSkills, currentPosition);
     renderSkillGroups();
-    Object.entries(foundSkills).forEach(([skill,val]) => {
-      const el = document.getElementById(`skill-${skill}`);
-      if(el) el.value = val;
-    });
     renderDrillList();
+    renderAbilityPicker('addAbilityPicker', currentPosition, preservedAbilities, false);
 
     const missingMeta = [];
     if(!detectedName) missingMeta.push('name');
     if(detectedAge === null) missingMeta.push('age');
     if(detectedOvr === null) missingMeta.push('OVR');
-    if(!detectedSpecialAbility) missingMeta.push('special ability (often icon-only)');
     if(!detectedRole) missingMeta.push('role');
     if(missingMeta.length){
       note.style.display = 'flex';
@@ -1901,20 +2058,24 @@ document.getElementById('saveBtn').addEventListener('click', savePlayer);
 document.getElementById('buildBtn').addEventListener('click', buildSession);
 
 function clearPlayerForm(){
-  document.getElementById('nameInput').value = '';
-  document.getElementById('ageInput').value = '';
-  document.getElementById('ovrInput').value = '';
-  document.getElementById('specialInput').value = '';
-  document.getElementById('playerTag').textContent = '';
-  document.getElementById('posSelect').value = '';
-  currentPosition = '';
-  currentPlayerKey = null;
-  renderSkillGroups();
-  renderDrillList();
-  document.getElementById('results').style.display = 'none';
-  document.getElementById('previewRow').style.display = 'none';
-  const loadStatus = document.getElementById('loadStatus');
-  if(loadStatus){ loadStatus.className = 'scan-status ok'; loadStatus.textContent = 'Ready for a new player. Pick their role, then scan.'; }
+  editingPlayerKey=null; currentPosition=''; addPlayerSkills={};
+  document.getElementById('nameInput').value='';
+  document.getElementById('ageInput').value='';
+  document.getElementById('ovrInput').value='';
+  document.getElementById('playerTag').textContent='';
+  document.getElementById('posSelect').value='';
+  document.getElementById('saveBtn').textContent='💾 Save Player';
+  document.getElementById('addPlayerTitle').textContent='Add Player';
+  document.getElementById('addPlayerSubtitle').textContent='Upload a Skills screenshot, review the scan, choose their role and special abilities, then save them to My Squad.';
+  document.getElementById('previewRow').style.display='none';
+  document.getElementById('nameSuggestBox').style.display='none';
+  document.getElementById('scanNote').style.display='none';
+  document.getElementById('fileInput').value='';
+  renderAbilityPicker('addAbilityPicker','',[],false);
+  const count=document.getElementById('addAbilityCount'); if(count)count.textContent='0 / 2';
+  renderAddSkillPreview({},'');
+  const loadStatus=document.getElementById('loadStatus');
+  if(loadStatus){loadStatus.className='scan-status ok';loadStatus.textContent='Ready for a new player.';}
 }
 
 renderSkillGroups();
@@ -1923,29 +2084,39 @@ renderDrillList();
 // ============================================================
 // PAGE NAVIGATION SHELL
 // ============================================================
-const PAGES = ['dashboard','squad','training','player','formation','mentors','tactics','settings'];
+const PAGES = ['dashboard','squad','add-player','training','player','formation','mentors','tactics','settings'];
+let currentPage='dashboard';
+let suppressHistory=false;
 
-function showPage(pageId, persist = true){
-  if(!PAGES.includes(pageId)) pageId = 'dashboard';
-  if(persist){ try{ localStorage.setItem('te:lastPage', pageId); if(currentPlayerKey) localStorage.setItem('te:lastPlayerKey', currentPlayerKey); }catch(_){} }
-  PAGES.forEach(p => {
-    const el = document.getElementById('page-' + p);
-    if(el) el.style.display = (p === pageId) ? 'block' : 'none';
-  });
-  document.querySelectorAll('.nav-item').forEach(el => {
-    el.classList.toggle('active', el.getAttribute('data-page') === pageId);
-  });
-  window.scrollTo(0,0);
-  if(pageId === 'dashboard') renderDashboard();
-  if(pageId === 'squad') renderSquadGrid();
-  if(pageId === 'training') {
-    populateTrainingPlayerPicker(currentPlayerKey).then(() => {
-      const picker = document.getElementById('trainingPlayerSelect');
-      if(currentPlayerKey && picker && picker.value === currentPlayerKey) selectTrainingPlayer(currentPlayerKey);
-    });
+function showPage(pageId, persist=true, options={}){
+  if(!PAGES.includes(pageId)) pageId='dashboard';
+  if(pageId===currentPage && persist && !options.force){ return; }
+  if(pageId==='training' && !options.preserveTraining) clearTrainingView();
+  currentPage=pageId;
+  if(persist && !suppressHistory){
+    try{
+      history.pushState({teApp:true,page:pageId,playerKey:currentPlayerKey},'', '#'+pageId+(pageId==='player'&&currentPlayerKey?'?player='+encodeURIComponent(currentPlayerKey):''));
+      localStorage.setItem('te:lastPage',pageId);
+      if(currentPlayerKey)localStorage.setItem('te:lastPlayerKey',currentPlayerKey);
+    }catch(_){}
   }
-  if(pageId === 'mentors') renderMentors();
-  if(pageId === 'tactics') renderTactics();
+  PAGES.forEach(p=>{const el=document.getElementById('page-'+p);if(el)el.style.display=p===pageId?'block':'none';});
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.toggle('active',el.getAttribute('data-page')===pageId));
+  window.scrollTo(0,0);
+  if(pageId==='dashboard') renderDashboard();
+  if(pageId==='squad') renderSquadGrid();
+  if(pageId==='add-player'){
+    renderAbilityPicker('addAbilityPicker',currentPosition,getSelectedAbilities('addAbilityPicker'),false);
+    renderAddSkillPreview(addPlayerSkills,currentPosition);
+  }
+  if(pageId==='training') populateTrainingPlayerPicker(trainingPlayerKey);
+  if(pageId==='mentors') renderMentors();
+  if(pageId==='tactics') renderTactics();
+}
+
+function navigateBackFallback(){
+  const fallback={player:'squad','training':'squad','add-player':'squad',squad:'dashboard',formation:'dashboard',mentors:'dashboard',tactics:'dashboard',settings:'dashboard'};
+  showPage(fallback[currentPage]||'dashboard');
 }
 
 function closeNavDrawer(){
@@ -1966,11 +2137,27 @@ if(hamburgerBtn) hamburgerBtn.addEventListener('click', toggleNavDrawer);
 const navDrawerOverlay = document.getElementById('navDrawerOverlay');
 if(navDrawerOverlay) navDrawerOverlay.addEventListener('click', closeNavDrawer);
 const navDrawerVersion = document.getElementById('navDrawerVersion');
-if(navDrawerVersion) navDrawerVersion.textContent = 'v2.7.0';
+if(navDrawerVersion) navDrawerVersion.textContent = 'v2.8.0';
 
 document.querySelectorAll('.nav-item').forEach(el => {
   el.addEventListener('click', () => { showPage(el.getAttribute('data-page')); closeNavDrawer(); });
 });
+
+const squadAddPlayerBtn=document.getElementById('squadAddPlayerBtn');
+if(squadAddPlayerBtn) squadAddPlayerBtn.addEventListener('click',()=>{clearPlayerForm();showPage('add-player');});
+const dashEmptyAddBtn=document.getElementById('dashEmptyAddBtn');
+if(dashEmptyAddBtn) dashEmptyAddBtn.addEventListener('click',()=>{clearPlayerForm();showPage('add-player');});
+
+window.addEventListener('popstate',e=>{
+  const state=e.state?.teApp ? e.state : null;
+  const page=state?.page || (location.hash ? location.hash.slice(1).split('?')[0] : null);
+  if(page==='player' && state?.playerKey){ openPlayerProfile(state.playerKey,false); return; }
+  if(page && PAGES.includes(page)){ suppressHistory=true; showPage(page,false,{preserveTraining:true}); suppressHistory=false; }
+  else navigateBackFallback();
+});
+
+if(!history.state?.teApp){ try{const base=location.href.split('#')[0]; history.replaceState({teApp:true,page:initialPage},'',base+'#'+initialPage); history.pushState({teApp:true,page:initialPage},'',base+'#'+initialPage);}catch(_){} }
+
 
 // ============================================================
 // DASHBOARD — every number here is computed from real stored
@@ -2018,94 +2205,150 @@ async function renderDashboard(){
 }
 
 // ============================================================
-// PLAYER PROFILE
+// PLAYER PROFILE — every operation is keyed to the selected player's storage key.
 // ============================================================
-async function openPlayerProfile(key){
-  const data = await loadPlayerByKey(key);
-  if(!data) return;
-  currentPlayerKey = key;
-  try{ localStorage.setItem('te:lastPlayerKey', key); }catch(_){}
-
-  document.getElementById('profileName').value = data.name || '';
-  document.getElementById('profileRole').textContent = data.position || '?';
-  document.getElementById('profileMeta').textContent = roleCategoryOf(data.position) +
-    (data.updatedAt ? ' · updated ' + new Date(data.updatedAt).toLocaleDateString() : '');
-  document.getElementById('profileAge').value = data.age ?? '';
-  document.getElementById('profileOvr').value = data.ovr ?? '';
-  document.getElementById('profileSpecial').value = data.specialAbility || '';
-
-  const white = POSITION_WHITE[data.position] || [];
-  const pool = skillsFor(data.position);
-  const barsEl = document.getElementById('profileBars');
-  barsEl.innerHTML = pool.map(s => {
-    const val = (data.skills || {})[s] || 0;
-    const isWhite = white.includes(s);
-    const pct = Math.min(val/220*100, 100);
-    return `<div class="bar-row">
-      <div class="bar-label" style="${isWhite ? 'color:var(--ink);font-weight:600;' : 'color:var(--ink-faint);'}">${s}</div>
-      <div class="bar-track"><div class="bar-fill ${isWhite?'':'grey-bar'}" style="width:${pct}%"></div></div>
-      <div class="bar-val">${val}</div>
-    </div>`;
-  }).join('');
-
-  showPage('player');
+async function savePlayerRecordByKey(key, changes){
+  const data=await loadRawPlayer(key);
+  if(!data) return false;
+  const updated={...data,...changes,updatedAt:new Date().toISOString(),specialAbilities:normaliseAbilities(changes)};
+  updated.specialAbility='';
+  await window.storage.set(key,JSON.stringify(updated),false);
+  return updated;
 }
 
-const profileBackBtn = document.getElementById('profileBackBtn');
-if(profileBackBtn) profileBackBtn.addEventListener('click', () => showPage('squad'));
+function setProfileEditMode(enabled){
+  profileEditMode=enabled;
+  ['profileName','profileAge','profileOvr','profilePosition'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=!enabled;});
+  const actions=document.getElementById('profileActions'); const editActions=document.getElementById('profileEditActions');
+  if(actions) actions.style.display=enabled?'none':'flex';
+  if(editActions) editActions.style.display=enabled?'flex':'none';
+}
 
-const profileSaveBtn = document.getElementById('profileSaveBtn');
-if(profileSaveBtn) profileSaveBtn.addEventListener('click', async () => {
-  if(!currentPlayerKey) return;
-  const data = await loadPlayerByKey(currentPlayerKey);
-  if(!data) return;
-  document.getElementById('nameInput').value = document.getElementById('profileName').value.trim();
-  document.getElementById('ageInput').value = document.getElementById('profileAge').value;
-  document.getElementById('ovrInput').value = document.getElementById('profileOvr').value;
-  document.getElementById('specialInput').value = document.getElementById('profileSpecial').value.trim();
-  currentPosition = data.position || currentPosition;
-  document.getElementById('posSelect').value = currentPosition || '';
-  Object.entries(data.skills || {}).forEach(([skill,val]) => { const el=document.getElementById(`skill-${skill}`); if(el) el.value=val; });
-  await savePlayer();
-  await openPlayerProfile(currentPlayerKey);
+function renderProfileSkills(data, editable=false){
+  const barsEl=document.getElementById('profileBars'); if(!barsEl) return;
+  const position=data.position||''; const white=POSITION_WHITE[position]||[]; const pool=skillsFor(position);
+  if(!position){barsEl.innerHTML='<div class="ability-empty">No role assigned.</div>';return;}
+  barsEl.innerHTML=pool.map(s=>{
+    const val=Number((data.skills||{})[s]||0); const isWhite=white.includes(s); const pct=Math.min(val/220*100,100);
+    return `<div class="bar-row">
+      <div class="bar-label" style="${isWhite?'color:var(--ink);font-weight:600;':'color:var(--ink-faint);'}">${escapeHtml(s)}</div>
+      ${editable ? `<input class="profile-skill-input" type="number" min="0" max="300" data-profile-skill="${escapeHtml(s)}" value="${val}">` : `<div class="bar-track"><div class="bar-fill ${isWhite?'':'grey-bar'}" style="width:${pct}%"></div></div><div class="bar-val">${val}</div>`}
+    </div>`;
+  }).join('');
+}
+
+async function openPlayerProfile(key,pushHistory=true){
+  const data=await loadRawPlayer(key); if(!data) return;
+  data.specialAbilities=normaliseAbilities(data); data.specialAbility='';
+  currentPlayerKey=key;
+  profileEditMode=false;
+  const abilities=normaliseAbilities(data);
+  document.getElementById('profileName').value=data.name||'';
+  document.getElementById('profilePosition').value=data.position||'';
+  document.getElementById('profileMeta').textContent=roleCategoryOf(data.position)+(data.updatedAt?' · updated '+new Date(data.updatedAt).toLocaleDateString():'');
+  document.getElementById('profileAge').value=data.age??'';
+  document.getElementById('profileOvr').value=data.ovr??'';
+  renderAbilityChips('profileAbilities',abilities);
+  renderAbilityPicker('profileAbilityPicker',data.position||'',abilities,true);
+  renderProfileSkills(data,false);
+  setProfileEditMode(false);
+  showPage('player',pushHistory);
+}
+
+function renderProfileEditAbilities(data){
+  const holder=document.getElementById('profileAbilities'); if(!holder) return;
+  holder.innerHTML='<div id="profileAbilityPicker"></div>';
+  renderAbilityPicker('profileAbilityPicker',data.position||'',normaliseAbilities(data),false);
+}
+
+function goBackInApp(fallback='dashboard'){
+  if(history.length>1){ history.back(); } else showPage(fallback);
+}
+
+const profileBackBtn=document.getElementById('profileBackBtn');
+if(profileBackBtn) profileBackBtn.addEventListener('click',()=>goBackInApp('squad'));
+
+const profileEditBtn=document.getElementById('profileEditBtn');
+if(profileEditBtn) profileEditBtn.addEventListener('click',async()=>{
+  if(!currentPlayerKey)return; const data=await loadRawPlayer(currentPlayerKey); if(!data)return;
+  setProfileEditMode(true);
+  renderProfileEditAbilities(data);
+  renderProfileSkills(data,true);
 });
 
-const profileEditBtn = document.getElementById('profileEditBtn');
-if(profileEditBtn) profileEditBtn.addEventListener('click', async () => {
-  const key = currentPlayerKey;
-  if(!key) return;
-  const data = await loadPlayerByKey(key);
-  if(!data) return;
-  document.getElementById('nameInput').value = data.name || '';
-  document.getElementById('ageInput').value = data.age ?? '';
-  document.getElementById('ovrInput').value = data.ovr ?? '';
-  document.getElementById('specialInput').value = data.specialAbility || '';
-  document.getElementById('posSelect').value = data.position || '';
-  currentPosition = data.position || '';
-  Object.entries(data.skills || {}).forEach(([skill,val]) => { const el=document.getElementById(`skill-${skill}`); if(el) el.value=val; });
-  document.getElementById('previewRow').style.display = 'none';
-  document.getElementById('scanStatus').textContent = 'Ready — upload a new screenshot to rescan this player.';
-  document.getElementById('scanStatus').className = 'scan-status';
-  document.getElementById('fileInput').value = '';
-  document.getElementById('playerTag').textContent = data.name ? `— ${data.name}` : '';
-  showPage('squad');
-  window.scrollTo(0,0);
+const profileCancelBtn=document.getElementById('profileCancelBtn');
+if(profileCancelBtn) profileCancelBtn.addEventListener('click',()=>openPlayerProfile(currentPlayerKey,true));
+
+const profileSaveBtn=document.getElementById('profileSaveBtn');
+if(profileSaveBtn) profileSaveBtn.addEventListener('click',async()=>{
+  if(!currentPlayerKey)return;
+  const old=await loadRawPlayer(currentPlayerKey); if(!old)return;
+  const position=document.getElementById('profilePosition').value;
+  const skills={};
+  skillsFor(position).forEach(s=>{const el=document.querySelector(`[data-profile-skill="${CSS.escape(s)}"]`);if(el)skills[s]=Number(el.value)||0;});
+  const changes={
+    name:document.getElementById('profileName').value.trim(),
+    position,
+    age:document.getElementById('profileAge').value.trim()===''?null:Number(document.getElementById('profileAge').value),
+    ovr:document.getElementById('profileOvr').value.trim()===''?null:Number(document.getElementById('profileOvr').value),
+    skills,
+    specialAbilities:getSelectedAbilities('profileAbilityPicker')
+  };
+  if(!changes.name){alert('Player name cannot be empty.');return;}
+  try{
+    await savePlayerRecordByKey(currentPlayerKey,changes);
+    await renderSquadGrid(); await populateTrainingPlayerPicker();
+    await openPlayerProfile(currentPlayerKey,true);
+  }catch(err){console.error(err);alert('Could not save player: '+(err.message||err));}
 });
 
-const profileDeleteBtn = document.getElementById('profileDeleteBtn');
-if(profileDeleteBtn) profileDeleteBtn.addEventListener('click', async () => {
-  if(!currentPlayerKey) return;
-  const name = document.getElementById('profileName').textContent;
+const profileUpdateBtn=document.getElementById('profileUpdateBtn');
+if(profileUpdateBtn) profileUpdateBtn.addEventListener('click',async()=>{
+  if(!currentPlayerKey)return;
+  const data=await loadRawPlayer(currentPlayerKey); if(!data)return;
+  editingPlayerKey=currentPlayerKey;
+  currentPosition=data.position||'';
+  document.getElementById('nameInput').value=data.name||'';
+  document.getElementById('ageInput').value=data.age??'';
+  document.getElementById('ovrInput').value=data.ovr??'';
+  document.getElementById('posSelect').value=currentPosition;
+  document.getElementById('playerTag').textContent=data.name?`— ${data.name}`:'';
+  addPlayerSkills={...(data.skills||{})};
+  renderAbilityPicker('addAbilityPicker',currentPosition,normaliseAbilities(data),false);
+  renderAddSkillPreview(addPlayerSkills,currentPosition);
+  document.getElementById('saveBtn').textContent='↻ Update Player';
+  document.getElementById('addPlayerTitle').textContent='Update Player';
+  document.getElementById('addPlayerSubtitle').textContent='Upload a new Skills screenshot. Only this player will be updated.';
+  document.getElementById('scanStatus').textContent='Ready — upload a new screenshot. It will update only '+(data.name||'this player')+'.';
+  document.getElementById('scanStatus').className='scan-status';
+  // The squad page is now list-only; send update flow to Add Player.
+  showPage('add-player');
+});
+
+const profileTrainingBtn=document.getElementById('profileTrainingBtn');
+if(profileTrainingBtn) profileTrainingBtn.addEventListener('click',async()=>{
+  if(!currentPlayerKey)return;
+  trainingPlayerKey=currentPlayerKey;
+  showPage('training',true,{preserveTraining:true});
+  await populateTrainingPlayerPicker(currentPlayerKey);
+  const picker=document.getElementById('trainingPlayerSelect'); if(picker)picker.value=currentPlayerKey;
+  await selectTrainingPlayer(currentPlayerKey);
+});
+
+const profileDeleteBtn=document.getElementById('profileDeleteBtn');
+if(profileDeleteBtn) profileDeleteBtn.addEventListener('click',async()=>{
+  if(!currentPlayerKey)return;
   if(!profileDeleteBtn.armed){
-    profileDeleteBtn.armed = true;
-    profileDeleteBtn.textContent = 'Tap again to confirm';
-    setTimeout(() => { profileDeleteBtn.armed = false; profileDeleteBtn.textContent = 'Delete Player'; }, 4000);
-    return;
+    profileDeleteBtn.armed=true; profileDeleteBtn.textContent='Tap again to confirm';
+    setTimeout(()=>{profileDeleteBtn.armed=false;profileDeleteBtn.textContent='Delete';},4000); return;
   }
-  await window.storage.delete(currentPlayerKey, false);
-  await window.storage.delete(`session:${currentPlayerKey.replace('player:','')}`, false).catch(()=>{});
-  currentPlayerKey = null;
-  showPage('squad');
+  try{
+    await window.storage.delete(currentPlayerKey,false);
+    await window.storage.delete(`session:${currentPlayerKey.replace('player:','')}`,false).catch(()=>{});
+    const order=await getSquadOrder(); await saveSquadOrder(order.filter(k=>k!==currentPlayerKey));
+    currentPlayerKey=null; editingPlayerKey=null; profileDeleteBtn.armed=false; profileDeleteBtn.textContent='Delete';
+    await renderSquadGrid(); await populateTrainingPlayerPicker(); showPage('squad');
+  }catch(err){console.error(err);}
 });
 
 const trainingPlayerSelect = document.getElementById('trainingPlayerSelect');
@@ -2116,12 +2359,12 @@ if(trainingPlayerSelect){
 // Initial load
 renderDashboard();
 renderSquadGrid();
-let initialPage = 'dashboard';
-let initialPlayerKey = null;
-try{ initialPage = localStorage.getItem('te:lastPage') || 'dashboard'; initialPlayerKey = localStorage.getItem('te:lastPlayerKey') || null; }catch(_){}
-if(initialPlayerKey) currentPlayerKey = initialPlayerKey;
-showPage(PAGES.includes(initialPage) ? initialPage : 'dashboard', false);
-if(initialPage === 'player' && initialPlayerKey){ openPlayerProfile(initialPlayerKey); }
+let initialPage='dashboard'; let initialPlayerKey=null;
+try{initialPage=localStorage.getItem('te:lastPage')||'dashboard';initialPlayerKey=localStorage.getItem('te:lastPlayerKey')||null;}catch(_){}
+if(initialPlayerKey) currentPlayerKey=initialPlayerKey;
+if(location.hash){const hp=location.hash.slice(1).split('?')[0];if(PAGES.includes(hp))initialPage=hp;}
+if(initialPage==='player' && initialPlayerKey) openPlayerProfile(initialPlayerKey,false);
+else showPage(PAGES.includes(initialPage)?initialPage:'dashboard',false);
 
 
 // ============================================================
@@ -2232,9 +2475,6 @@ document.addEventListener('change', function(e){
   setTacticSelection(sel.getAttribute('data-group'), sel.getAttribute('data-field'), sel.value);
 });
 
-
-const dashEmptyAddBtn = document.getElementById('dashEmptyAddBtn');
-if(dashEmptyAddBtn) dashEmptyAddBtn.addEventListener('click', () => { clearPlayerForm(); showPage('training'); });
 const clearAllBtn = document.getElementById('clearAllDataBtn');
 if(clearAllBtn){
   clearAllBtn.addEventListener('click', async () => {
