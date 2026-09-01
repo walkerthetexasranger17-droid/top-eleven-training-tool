@@ -1562,34 +1562,59 @@ function findHeaderNumber(rows, labelRe){
   return null;
 }
 
-function detectHeaderMetadata(words, rows, rawText){
+function detectHeaderMetadata(words, rows, rawText, imageHeight=1000, imageWidth=1000){
   const sortedRows = [...rows].sort((a,b)=>a.cy-b.cy);
-  const ovr = findHeaderNumber(sortedRows, /^OVR:?$/i);
-  const age = findHeaderNumber(sortedRows, /^Age:?$/i);
-  const blocked = new Set(['age','team','roles','role','special','ability','ovr','rare','elite','stellar','epic','legendary','master','diamond','overview','skills','playstyle','stats','personal','trainer','contract']);
+  const skillGroupLabels = new Set(['defence','defense','attack','physical','goalkeeping','skills','overview','playstyle','stats']);
+  const blocked = new Set([
+    'age','team','roles','role','special','ability','ovr','rare','elite','stellar','epic','legendary','master','diamond',
+    'overview','skills','playstyle','stats','personal','trainer','contract','defence','defense','attack','physical',
+    'goalkeeping','goalkeeper','condition','morale','training','level','position','positions','player','quality','quality%',
+    'market','value','salary','tokens','cash','green','blue','red','white','mental','passing','finishing','heading','dribbling',
+    'crossing','shooting','tackling','marking','speed','strength','stamina','creativity','passing','reflexes','handling','kicking','oneonone'
+  ]);
+  ALL_SKILL_NAMES.forEach(n => blocked.add(n.toLowerCase()));
   const positions = new Set(Object.keys(POSITION_WHITE));
-  const cutoff = sortedRows.find(r => r.words.some(w => /^OVR:?$/i.test(w.text.trim())))?.cy ?? Infinity;
+
+  // The player's name is in the upper header of a Top Eleven Skills screen.
+  // The old detector searched the whole screenshot and therefore happily
+  // selected "DEFENCE ATTACK PHYSICAL" as a name. Restricting the candidate
+  // area to the upper ~32% and excluding every skill/group label prevents that.
+  const headerCutoff = imageHeight * 0.34;
   const candidates = [];
   sortedRows.forEach(row => {
-    if(row.cy > cutoff + 10) return;
-    const toks = row.words.map(w=>w.text.trim()).filter(t=>/^[A-Za-z][A-Za-z''.-]{1,}$/.test(t));
-    const clean = toks.filter(t=>!blocked.has(t.toLowerCase()) && !positions.has(t.toUpperCase()));
-    if(clean.length < 1 || clean.length > 5) return;
-    const minX = Math.min(...row.words.map(w=>w.bbox.x0));
-    const maxX = Math.max(...row.words.map(w=>w.bbox.x1));
-    const imgWidth = Math.max(...words.map(w => w.bbox.x1), 1000);
+    if(row.cy > headerCutoff) return;
+    const toks = row.words.map(w=>w.text.trim())
+      .filter(t=>/^[A-Za-z][A-Za-z'’.-]{1,}$/.test(t));
+    const clean = toks.filter(t=>{
+      const low=t.toLowerCase();
+      return !blocked.has(low) && !positions.has(t.toUpperCase()) && !/^(ovr|age|roles?)$/i.test(t);
+    });
+    if(clean.length < 1 || clean.length > 4) return;
+    const minX = Math.min(...row.words.map(w => w.bbox.x0));
+    const maxX = Math.max(...row.words.map(w => w.bbox.x1));
     const center = (minX+maxX)/2;
-    const score = (clean.length >= 2 ? 20 : 0) + clean.reduce((n,t)=>n+(t.length>=3?2:0),0)
-      - (center < imgWidth*0.16 ? 15 : 0)
-      - Math.abs((cutoff===Infinity?row.cy:cutoff-45)-row.cy)/20;
-    candidates.push({name:clean.join(' '),score,cy:row.cy});
+    const confs = row.words.map(w=>Number.isFinite(w.confidence)?w.confidence:50);
+    const conf = confs.reduce((a,b)=>a+b,0)/confs.length;
+    // Names are normally left/centre aligned in the player header, not a
+    // full-width section heading. Prefer 2-word names and readable OCR.
+    const score = (clean.length === 2 ? 55 : clean.length === 3 ? 35 : 8)
+      + conf * 0.35
+      + (center < imageWidth*0.62 ? 15 : 0)
+      - (center > imageWidth*0.78 ? 25 : 0)
+      - row.cy/(imageHeight||1000)*20;
+    candidates.push({name:clean.join(' '),score,cy:row.cy,conf});
   });
   candidates.sort((a,b)=>b.score-a.score);
   let name = candidates[0]?.name || '';
-  if(name && name.split(' ').length === 1){
-    const twoWord = candidates.find(c=>c.name.split(' ').length >= 2);
-    if(twoWord) name = twoWord.name;
-  }
+
+  // Reject obvious OCR artefacts and common UI phrases even if they slipped
+  // through the token filter.
+  if(name && /^(defence|defense|attack|physical)(\s+(defence|defense|attack|physical)){0,2}$/i.test(name)) name='';
+  if(name && candidates[0] && candidates[0].conf < 35) name='';
+
+  const ovr = findHeaderNumber(sortedRows, /^OVR:?$/i);
+  const age = findHeaderNumber(sortedRows, /^Age:?$/i);
+
   let stars = null;
   const starMatch = String(rawText||'').match(/(?:stars?\s*[:=]?\s*)(\d+(?:\.5)?)/i);
   if(starMatch) stars = Number(starMatch[1]);
@@ -1597,8 +1622,10 @@ function detectHeaderMetadata(words, rows, rawText){
     const symbolMatch = String(rawText||'').match(/(★{1,10}|\*{2,10})/);
     if(symbolMatch) stars = symbolMatch[1].replace(/\*/g,'★').length;
   }
+
   let specialAbility = '';
   for(const row of sortedRows){
+    if(row.cy > headerCutoff) break;
     const idx = row.words.findIndex(w => /^special$/i.test(w.text.trim()));
     if(idx >= 0){
       const tail = row.words.slice(idx+1).map(w=>w.text.trim()).filter(t=>/^[A-Za-z][A-Za-z -]{2,}$/.test(t));
@@ -1607,6 +1634,34 @@ function detectHeaderMetadata(words, rows, rawText){
     }
   }
   return {name, age, ovr, stars, specialAbility};
+}
+
+async function makeHeaderOCR(dataUrl){
+  // Run a second, focused OCR pass over the player-header area. This is much
+  // more reliable for Name / Age / OVR than asking one OCR pass to understand
+  // the entire skills grid at once.
+  return new Promise((resolve,reject)=>{
+    const img = new Image();
+    img.onload = async () => {
+      try{
+        const h = Math.max(1, Math.floor(img.height * 0.36));
+        const c = document.createElement('canvas');
+        const scale = 2;
+        c.width = img.width * scale;
+        c.height = h * scale;
+        const ctx = c.getContext('2d', {willReadFrequently:true});
+        ctx.drawImage(img, 0, 0, img.width, h, 0, 0, c.width, c.height);
+        const headerUrl = c.toDataURL('image/jpeg', 0.92);
+        const r = await Tesseract.recognize(headerUrl, 'eng', {
+          logger: ()=>{},
+          config: { tessedit_pageseg_mode: '11' }
+        });
+        resolve(r.data);
+      }catch(e){ reject(e); }
+    };
+    img.onerror=()=>reject(new Error('Could not prepare header image'));
+    img.src=dataUrl;
+  });
 }
 
 async function scanImage(dataUrl){
@@ -1701,7 +1756,32 @@ async function scanImage(dataUrl){
       if(gkHits >= 3) detectedRole = 'GK';
     }
 
-    const headerMeta = detectHeaderMetadata(words, rows, data.text || '');
+    let headerMeta = detectHeaderMetadata(words, rows, data.text || '', Math.max(...words.map(w=>w.bbox.y1), 1000), Math.max(...words.map(w=>w.bbox.x1), 1000));
+    // Focused header OCR gets a separate chance to read the name/OVR/age.
+    try{
+      const headerData = await makeHeaderOCR(dataUrl);
+      const hWords = (headerData.words || []).filter(w => w.text && w.text.trim() && (w.confidence === undefined || w.confidence > 20));
+      const hSorted = [...hWords].sort((a,b)=>a.bbox.y0-b.bbox.y0);
+      const hRows=[];
+      const hAvg=(hSorted.reduce((sum,w)=>sum+(w.bbox.y1-w.bbox.y0),0)/Math.max(1,hSorted.length))||20;
+      hSorted.forEach(w=>{
+        const cy=(w.bbox.y0+w.bbox.y1)/2;
+        let row=hRows.find(r=>Math.abs(r.cy-cy)<hAvg*0.7);
+        if(!row){row={cy,words:[]};hRows.push(row);}
+        row.words.push(w); row.cy=(row.cy*(row.words.length-1)+cy)/row.words.length;
+      });
+      hRows.forEach(r=>r.words.sort((a,b)=>a.bbox.x0-b.bbox.x0));
+      const focused=detectHeaderMetadata(hWords,hRows,headerData.text||'',Math.max(...hWords.map(w=>w.bbox.y1),1000),Math.max(...hWords.map(w=>w.bbox.x1),1000));
+      // Prefer focused header results, but keep the full-image result if the
+      // focused pass could not read a field.
+      headerMeta={
+        name: focused.name || headerMeta.name,
+        age: focused.age ?? headerMeta.age,
+        ovr: focused.ovr ?? headerMeta.ovr,
+        stars: focused.stars ?? headerMeta.stars,
+        specialAbility: focused.specialAbility || headerMeta.specialAbility
+      };
+    }catch(_){ /* full-image OCR result is still usable */ }
     const detectedName = headerMeta.name;
     const detectedAge = headerMeta.age;
     const detectedOvr = headerMeta.ovr;
@@ -1766,7 +1846,7 @@ async function scanImage(dataUrl){
 
     const matchedCount = Object.keys(foundSkills).length;
     status.className = 'scan-status ok';
-    status.textContent = `Scanned ✓ — matched ${matchedCount} skill${matchedCount===1?'':'s'}${detectedName ? ' and player details' : ''}. Check the fields before saving.`;
+    status.textContent = `Scanned ✓ — matched ${matchedCount} skill${matchedCount===1?'':'s'}${detectedName ? ' and player details' : ''}. Header fields were read separately; check them before saving.`;
   } catch(err){
     status.className = 'scan-status err';
     status.textContent = 'Scan failed: ' + err.message;
