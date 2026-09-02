@@ -1014,6 +1014,18 @@ const PLAYSTYLES = {
   "No-Nonsense DC": {description:"Prioritises defensive safety, clearances and simple decisions under pressure."}
 };
 
+// Application state. Keep these at script scope because the SPA pages and
+// event handlers all share the same player/training selection.
+let currentPlayerKey = null;
+let trainingPlayerKey = null;
+let editingPlayerKey = null;
+let profileEditMode = false;
+let currentPosition = '';
+let currentRoles = [];
+let addPlayerSkills = {};
+let pendingPlayerImage = '';
+const disabledDrills = new Set();
+
 function normaliseAbilities(data){
   const known = Object.keys(SPECIAL_ABILITIES);
   const raw = Array.isArray(data?.specialAbilities) ? data.specialAbilities : (data?.specialAbility ? [data.specialAbility] : []);
@@ -2127,7 +2139,7 @@ async function scanImage(dataUrl){
       if(gkHits >= 3) detectedRoles=['GK'];
     }
     detectedRoles=detectedRoles.slice(0,3);
-    const detectedRole = detectedRoles[0] || '';
+    let detectedRole = detectedRoles[0] || '';
 
     let headerMeta = detectHeaderMetadata(words, rows, data.text || '', Math.max(...words.map(w=>w.bbox.y1), 1000), Math.max(...words.map(w=>w.bbox.x1), 1000));
     // Focused header OCR gets a separate chance to read the name/OVR/age.
