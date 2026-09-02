@@ -291,6 +291,13 @@
   .empty-state{text-align:center;padding:50px 20px;color:var(--ink-faint);}
   .empty-state button{margin-top:14px;}
 
+  .dashboard-stats{grid-template-columns:repeat(4,minmax(0,1fr));}
+  .dashboard-highlight-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  .dashboard-highlight-grid>div{background:rgba(7,18,29,.48);border:1px solid var(--line);border-radius:9px;padding:9px 10px;}
+  .dashboard-highlight-grid span{display:block;font:9px 'JetBrains Mono',monospace;color:var(--ink-faint);text-transform:uppercase;}
+  .dashboard-highlight-grid b{display:block;font:600 15px 'Barlow Condensed',sans-serif;text-transform:uppercase;margin-top:3px;color:var(--ink);}
+  @media(max-width:620px){.dashboard-stats{grid-template-columns:repeat(2,minmax(0,1fr));}}
+
   /* ---- Squad grid ---- */
   .squad-card{
     display:flex;align-items:center;justify-content:space-between;gap:10px;
@@ -310,9 +317,9 @@
   .squad-card.drop-target{border-color:var(--blue);box-shadow:0 0 16px rgba(30,200,255,.14);}
 
   /* ---- Player profile ---- */
-  .profile-head{display:flex;align-items:flex-start;justify-content:flex-start;margin-bottom:18px;gap:16px;}
-  .profile-avatar-wrap{width:100px;flex:0 0 100px;display:flex;flex-direction:column;align-items:center;gap:7px;}
-  .profile-avatar{width:92px;height:92px;border-radius:50%;object-fit:cover;object-position:center center;border:2px solid var(--line);background:rgba(7,18,29,.6);box-shadow:0 8px 24px rgba(0,0,0,.28);display:block;}
+  .profile-head{display:grid;grid-template-columns:104px minmax(0,1fr);align-items:start;justify-content:start;margin-bottom:18px;gap:18px;}
+  .profile-avatar-wrap{width:104px;flex:0 0 104px;display:flex;flex-direction:column;align-items:center;gap:7px;}
+  .profile-avatar{width:96px;height:96px;border-radius:50%;object-fit:cover;object-position:center center;border:2px solid var(--line);background:rgba(7,18,29,.6);box-shadow:0 8px 24px rgba(0,0,0,.28);display:block;}
   .profile-head-position{width:100%;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;text-align:center;color:var(--blue);background:rgba(30,200,255,.10);border:1px solid var(--blue-dim);border-radius:6px;padding:5px 4px;box-sizing:border-box;}
   .profile-head-copy{min-width:0;flex:1;padding-top:3px;}
   .profile-head-copy .profile-edit-name{width:100%;box-sizing:border-box;}
@@ -327,17 +334,17 @@
   .formation-toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px;}
   .formation-toolbar .small{margin:0;}
   .formation-summary{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);line-height:1.45;}
-  .pitch{position:relative;width:min(100%,700px);aspect-ratio:0.72/1;min-height:640px;margin:0 auto;border:2px solid rgba(238,246,251,.7);border-radius:10px;overflow:hidden;background:linear-gradient(90deg,rgba(48,120,72,.48),rgba(35,100,59,.48));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);}
+  .pitch{position:relative;width:min(100%,560px);aspect-ratio:68/105;min-height:0;margin:0 auto;border:2px solid rgba(238,246,251,.7);border-radius:10px;overflow:hidden;background:linear-gradient(90deg,rgba(48,120,72,.48),rgba(35,100,59,.48));box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);}
   .pitch::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0,rgba(255,255,255,.035) 8%,transparent 8%,transparent 16%);pointer-events:none;}
   .pitch-line{position:absolute;border:1px solid rgba(255,255,255,.6);pointer-events:none;}
   .pitch-mid{left:0;right:0;top:50%;border-top:1px solid rgba(255,255,255,.6);}
-  .pitch-circle{left:calc(50% - 12%);top:calc(50% - 16%);width:24%;height:32%;border-radius:50%;}
+  .pitch-circle{left:38%;top:calc(50% - 7.7%);width:24%;aspect-ratio:1;height:auto;border-radius:50%;}
   .pitch-box-top{left:31%;top:0;width:38%;height:18%;}
   .pitch-box-bottom{left:31%;bottom:0;width:38%;height:18%;}
   .pitch-six-top{left:42%;top:0;width:16%;height:7%;}
   .pitch-six-bottom{left:42%;bottom:0;width:16%;height:7%;}
   .pitch-player{position:absolute;transform:translate(-50%,-50%);width:76px;text-align:center;cursor:pointer;z-index:3;}
-  .pitch-player-dot{width:46px;height:46px;margin:0 auto 4px;border-radius:50%;border:2px solid var(--ink);background:rgba(5,13,22,.94);display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.35);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:800;color:var(--ink);}
+  .pitch-player-dot{width:42px;height:42px;margin:0 auto 4px;border-radius:50%;border:2px solid var(--ink);background:rgba(5,13,22,.94);display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.35);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:800;color:var(--ink);}
   .pitch-player-dot img{width:100%;height:100%;object-fit:cover;object-position:center center;}
   .pitch-player-name{font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;text-shadow:0 1px 4px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .pitch-player-role{display:none;}
@@ -350,6 +357,45 @@
   .profile-name{font-family:'Barlow Condensed',sans-serif;font-size:26px;text-transform:uppercase;}
   .profile-role-badge{font-family:'JetBrains Mono',monospace;background:rgba(30,200,255,0.12);color:var(--blue);border:1px solid rgba(30,200,255,0.4);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;text-shadow:0 0 10px rgba(30,200,255,0.4);}
   .grey-bar{background:var(--ink-faint) !important;}
+
+  /* ---- v26 role / playmaker / tactical UI ---- */
+  .detected-roles-panel{margin-top:10px;background:rgba(7,18,29,.46);border:1px solid var(--blue-dim);border-radius:10px;padding:10px 12px;}
+  .detected-roles-title{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--blue);display:flex;justify-content:space-between;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;}
+  .detected-role-list{display:flex;gap:7px;flex-wrap:wrap;}
+  .detected-role-btn{border:1px solid var(--line);background:var(--bg-raised);color:var(--ink-dim);border-radius:7px;padding:7px 11px;font:700 11px 'JetBrains Mono',monospace;cursor:pointer;}
+  .detected-role-btn.selected{border-color:var(--turf);color:var(--turf);background:rgba(57,255,106,.08);box-shadow:0 0 12px rgba(57,255,106,.12);}
+  .detected-roles-help{font-size:11px;color:var(--ink-faint);margin-top:8px;line-height:1.4;}
+  .playmaker-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+  .playmaker-card{background:linear-gradient(165deg,rgba(18,37,54,.96),rgba(10,22,34,.98));border:1px solid var(--line);border-radius:18px;padding:15px;box-shadow:0 12px 40px rgba(0,0,0,.22);}
+  .playmaker-wide{grid-column:1/-1;}
+  .playmaker-card-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:11px;}
+  .playmaker-card-head h3{font-family:'Barlow Condensed',sans-serif;font-size:17px;text-transform:uppercase;margin:0;color:var(--ink);}
+  .playmaker-card-head p{font-size:11.5px;color:var(--ink-dim);line-height:1.45;margin:4px 0 0;}
+  .playmaker-card-head>span,.playmaker-count{font:700 9px 'JetBrains Mono',monospace;color:var(--blue);border:1px solid var(--blue-dim);border-radius:5px;padding:4px 6px;white-space:nowrap;}
+  .playmaker-row{display:grid;grid-template-columns:28px 46px minmax(0,1fr) auto;gap:9px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);}
+  .playmaker-row:last-child{border-bottom:0;}
+  .playmaker-rank{font:700 11px 'JetBrains Mono',monospace;color:var(--ink-faint);text-align:center;}
+  .playmaker-face{width:46px;height:46px;border-radius:50%;object-fit:cover;border:1px solid var(--line);background:var(--bg-raised);}
+  .playmaker-fallback{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--bg-raised);border:1px solid var(--line);font:700 10px 'JetBrains Mono',monospace;color:var(--blue);}
+  .playmaker-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .playmaker-meta{font-size:10.5px;color:var(--ink-dim);margin-top:2px;}
+  .playmaker-score{font:700 12px 'JetBrains Mono',monospace;color:var(--turf);}
+  .tactical-generator{background:linear-gradient(165deg,rgba(18,37,54,.96),rgba(10,22,34,.98));border:1px solid var(--line);border-radius:18px;padding:15px;margin-bottom:14px;}
+  .tactical-generator-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:11px;}
+  .tactical-generator-head h2{margin:0;color:var(--blue);}
+  .tactical-generator-head p{font-size:11.5px;color:var(--ink-dim);margin:4px 0 0;}
+  .tactical-generator-head select{min-width:130px;}
+  .tactical-result{border:1px solid var(--blue-dim);background:rgba(30,200,255,.06);border-radius:12px;padding:12px;}
+  .tactical-result-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px;}
+  .tactical-result-item{background:rgba(7,18,29,.5);border:1px solid var(--line);border-radius:8px;padding:8px;}
+  .tactical-result-label{font:9px 'JetBrains Mono',monospace;color:var(--ink-faint);text-transform:uppercase;}
+  .tactical-result-value{font:600 12px 'DM Sans',sans-serif;color:var(--ink);margin-top:3px;}
+  .tactical-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+  .tactical-preset{background:rgba(7,18,29,.58);border:1px solid var(--line);border-radius:13px;padding:12px;}
+  .tactical-preset h3{font:700 15px 'Barlow Condensed',sans-serif;text-transform:uppercase;margin:0 0 5px;}
+  .tactical-preset .mentor{color:var(--blue);font:700 10px 'JetBrains Mono',monospace;}
+  .tactical-preset .line{font-size:11px;color:var(--ink-dim);line-height:1.45;margin-top:5px;}
+  @media(max-width:620px){.playmaker-grid,.tactical-presets{grid-template-columns:1fr}.playmaker-wide{grid-column:auto}.tactical-generator-head{align-items:stretch;flex-direction:column}.tactical-generator-head select{width:100%}.tactical-result-grid{grid-template-columns:1fr}}
 
   /* ---- Mentors ---- */
   .mentor-card{
@@ -495,6 +541,7 @@
 <div class="nav-item" data-page="add-player"><span class="nav-icon">＋</span><span>Add Player</span></div>
 <div class="nav-item" data-page="training"><span class="nav-icon">&#9673;</span><span>Training</span></div>
 <div class="nav-item" data-page="formation"><span class="nav-icon">&#9917;</span><span>Formation</span></div>
+<div class="nav-item" data-page="playmakers"><span class="nav-icon">&#9733;</span><span>Playmakers</span></div>
 <div class="nav-item" data-page="mentors"><span class="nav-icon">&#127891;</span><span>Mentors</span></div>
 <div class="nav-item" data-page="tactics"><span class="nav-icon">&#128203;</span><span>Tactics</span></div>
 <div class="nav-item" data-page="settings"><span class="nav-icon">&#9881;</span><span>Settings</span></div>
@@ -512,10 +559,15 @@
       <br><button class="small" id="dashEmptyAddBtn">+ Add Your First Player</button>
     </div>
     <div id="dashboardContent" style="display:none;">
-      <div class="stat-grid">
+      <div class="stat-grid dashboard-stats">
         <div class="stat-card"><div class="stat-label">Squad Players</div><div class="stat-value" id="statTotalPlayers">0</div></div>
+        <div class="stat-card"><div class="stat-label">Average OVR</div><div class="stat-value" id="statAvgOvr">—</div></div>
+        <div class="stat-card"><div class="stat-label">Highest OVR</div><div class="stat-value" id="statTopOvr">—</div></div>
+        <div class="stat-card"><div class="stat-label">Roles Covered</div><div class="stat-value" id="statRolesCovered">0</div></div>
       </div>
+      <div class="dash-panel"><h3>Squad Snapshot</h3><div class="dashboard-highlight-grid"><div><span>Strongest player</span><b id="dashTopPlayer">—</b></div><div><span>Defence average</span><b id="dashDefAvg">—</b></div><div><span>Attack average</span><b id="dashAttAvg">—</b></div><div><span>Midfield average</span><b id="dashMidAvg">—</b></div></div></div>
       <div class="dash-panel"><h3>Players by Position</h3><div id="statByPosition"></div></div>
+      <div class="dash-panel"><h3>Squad Coverage</h3><div id="dashPositionCoverage"></div></div>
       <div class="dash-panel"><h3>Needs Attention (incomplete scans)</h3><div id="statNeedsAttention"></div></div>
       <div class="dash-panel"><h3>Recently Updated</h3><div id="statRecent"></div></div>
     </div>
@@ -568,6 +620,11 @@
       </select>
       <span class="player-tag" id="playerTag"></span>
     </div>
+    <div class="detected-roles-panel" id="detectedRolesPanel" style="display:none;">
+      <div class="detected-roles-title">Detected roles <span id="roleCountLabel">0 / 3</span></div>
+      <div class="detected-role-list" id="detectedRoleList"></div>
+      <div class="detected-roles-help">Select the role you want this player to use as their primary team position.</div>
+    </div>
     <div class="note" id="scanNote" style="display:none;"></div>
     <div class="name-suggest-box" id="nameSuggestBox" style="display:none;"></div>
     <div class="save-row">
@@ -579,11 +636,11 @@
       <div class="player-meta-field"><label>OVR</label><input type="number" id="ovrInput" min="1" max="300" inputmode="numeric" placeholder="—"></div>
     </div>
     <div class="ability-panel" style="margin-top:12px;">
-      <div class="ability-panel-head"><div><b>Special abilities</b><div class="sub">Manual selection only — choose up to 2. The screenshot scan will never assign one.</div></div><span class="ability-count" id="addAbilityCount">0 / 2</span></div>
+      <div class="ability-panel-head"><div><b>Special abilities</b><div class="sub">Manual selection only — choose up to 2 from all 11 special abilities. The screenshot scan will never assign one.</div></div><span class="ability-count" id="addAbilityCount">0 / 2</span></div>
       <div id="addAbilityPicker"></div>
     </div>
     <div class="playstyle-panel">
-      <div class="ability-panel-head"><div><b>Playstyle</b><div class="sub">Manual selection only — choose a maximum of 1. Options are filtered by position.</div></div><span class="ability-count" id="addPlaystyleCount">0 / 1</span></div>
+      <div class="ability-panel-head"><div><b>Playstyle</b><div class="sub">Manual selection only — choose a maximum of 1. All 22 playstyles are available for manual selection.</div></div><span class="ability-count" id="addPlaystyleCount">0 / 1</span></div>
       <div id="addPlaystylePicker"></div>
     </div>
     <div class="scan-status" id="saveStatus" style="margin-top:6px;"></div>
@@ -713,7 +770,7 @@
 </div>
 
 <div id="page-formation" style="display:none;">
-  <div class="page-header"><h1>Formation</h1><p>Build an XI from your saved squad using OVR, role skills, playstyles and special abilities.</p></div>
+  <div class="page-header"><h1>Formation</h1><p>Build the best XI from your saved squad. Natural roles are prioritised before OVR, skills, playstyles and special abilities.</p></div>
   <div class="page-body">
     <div class="formation-panel">
       <div class="formation-toolbar">
@@ -725,12 +782,28 @@
         <div class="pitch-line pitch-box-top"></div><div class="pitch-line pitch-box-bottom"></div>
         <div class="pitch-line pitch-six-top"></div><div class="pitch-line pitch-six-bottom"></div>
       </div>
-      <div class="formation-note">The selector scores each formation against your actual squad. It rewards natural-position fit first, then OVR and role-specific skills, with smaller bonuses for compatible playstyles and special abilities. It will not invent players or silently change their saved records.</div>
+      <div class="formation-note">Team Select compares the main Top Eleven formations against your saved roles. Natural-position players are strongly prioritised; OVR, relevant skills, playstyles and special abilities break ties. For 4-2-3-1, the two deeper midfield slots accept DMC or MC — attacking midfielders are reserved for AML/AMC/AMR.</div>
       <div id="formationBench" class="formation-bench"></div>
     </div>
   </div>
 </div>
 
+
+<div id="page-playmakers" style="display:none;">
+  <div class="page-header"><h1>Playmakers</h1><p>Automatic set-piece and captain recommendations calculated from the players you have actually saved.</p></div>
+  <div class="page-body">
+    <div class="playmaker-grid">
+      <div class="playmaker-card playmaker-wide">
+        <div class="playmaker-card-head"><div><h3>Penalty takers</h3><p>Ranked best → worst from finishing, shooting and creativity, with a strong bonus for Penalty Kick Specialist.</p></div><span class="playmaker-count">TOP 5</span></div>
+        <div id="penaltyTakers"></div>
+      </div>
+      <div class="playmaker-card"><div class="playmaker-card-head"><h3>Corner taker</h3><span>BEST</span></div><div id="cornerTaker"></div></div>
+      <div class="playmaker-card"><div class="playmaker-card-head"><h3>Free kick taker</h3><span>BEST</span></div><div id="freeKickTaker"></div></div>
+      <div class="playmaker-card playmaker-wide"><div class="playmaker-card-head"><div><h3>Captain</h3><p>Quality + experience + broad ability. The app uses age as an experience proxy because form and match ratings are not stored.</p></div><span>BEST</span></div><div id="captainPick"></div></div>
+    </div>
+    <div class="formation-note">Set-piece scoring follows the practical Top Eleven community consensus: finishing is the key penalty attribute, shooting is primary for free kicks, and crossing is primary for corners, with passing/creativity as supporting attributes and the relevant special ability as a significant bonus.</div>
+  </div>
+</div>
 
 <div id="page-mentors" style="display:none;">
   <div class="page-header"><h1>Mentors</h1><p>Your real mentor roster and their bonuses. Tap Assign to track who's currently active.</p></div>
@@ -741,12 +814,16 @@
 
 
 <div id="page-tactics" style="display:none;">
-  <div class="page-header"><h1>Tactics</h1><p>Set and remember your current tactical setup across all three phases of play.</p></div>
+  <div class="page-header"><h1>Tactical</h1><p>Generate defending, balanced and attacking plans from your actual squad, with the 2027 Legendary Mentor system built in.</p></div>
   <div class="page-body">
-    <div id="tacticsGroups"></div>
-    <div class="placeholder-page" style="padding:24px 10px;">
-      <p style="font-size:12.5px;max-width:420px;margin:0 auto;">Tactical <i>recommendations</i> based on your squad's attributes aren't built yet — this page just remembers your manual picks for now, so nothing here is guessing on your behalf.</p>
+    <div class="tactical-generator">
+      <div class="tactical-generator-head"><div><h2>Team priority</h2><p>Choose the priority and generate a complete recommendation.</p></div><select id="tacticalPriority"><option value="defending">Defending</option><option value="balanced" selected>Balanced</option><option value="attacking">Attacking</option></select></div>
+      <button class="primary" id="generateTacticsBtn">⚡ Generate Best Tactics</button>
+      <div id="tacticalRecommendation" style="margin-top:14px;"></div>
     </div>
+    <div class="tactical-presets" id="tacticalPresets"></div>
+    <div class="section-head" style="margin-top:18px;"><h2>Manual Tactical Settings</h2></div>
+    <div id="tacticsGroups"></div>
   </div>
 </div>
 
@@ -899,36 +976,42 @@ const CATEGORY_COLORS = {
 };
 
 const SPECIAL_ABILITIES = {
-  "Playmaker": {positions:["DMC","MR","ML","MC","AMC"], description:"Helps transition the ball smoothly from defense to attack, increasing assist potential and controlling the pace."},
-  "One-on-One Scorer": {positions:["AMR","AML","AMC","ST"], description:"Gives your striker an advantage when facing the goalkeeper alone in scoring situations."},
-  "One-on-One Stopper": {positions:["GK"], description:"Improves the goalkeeper's performance when an opponent breaks through the defensive line for a direct one-on-one shot."},
-  "Penalty Kick Specialist": {positions:["DMC","MR","ML","MC","AMR","AML","AMC","ST"], description:"Increases accuracy and success rates when taking penalty kicks."},
-  "Penalty Kick Stopper": {positions:["GK"], description:"Boosts the goalkeeper's chance of saving a penalty kick."},
-  "Free Kick Specialist": {positions:["DMC","MR","ML","MC","AMR","AML","AMC","ST"], description:"Increases the accuracy and danger level of direct free kick shots on goal."},
-  "Corner Specialist": {positions:["DMC","MR","ML","MC","AMR","AML","AMC","ST"], description:"Improves the precision of corner kicks, leading to higher chance creation for headers."},
-  "Defensive Wall": {positions:["DR","DL","DC","DMR","DML"], description:"Helps block long-range shots and direct free kicks effectively when positioned properly."},
-  "Aerial Defender": {positions:["DR","DL","DC","DMR","DML"], description:"Enhances defensive capability during high balls, crosses, and aerial duels inside the box."},
-  "Shadow Striker": {positions:["DMC","MR","ML","MC","AMR","AML","AMC","ST"], description:"Allows a midfielder or secondary attacker to make surprise late runs into the penalty area to score."},
-  "Dribbler": {positions:["DMC","MR","ML","MC","AMR","AML","AMC","ST"], description:"Gives the player better control to beat defenders in tight spaces using individual skill."}
+  "Penalty Kick Stopper": {description:"Improves the goalkeeper's chance of stopping penalties."},
+  "Defensive Wall": {description:"Helps block long-range shots and direct free kicks."},
+  "Aerial Defender": {description:"Improves defensive performance in aerial duels and high balls."},
+  "Dribbler": {description:"Improves the player's ability to beat opponents with the ball."},
+  "Corner Specialist": {description:"Improves the precision and danger of corner kicks."},
+  "Shadow Striker": {description:"Encourages dangerous late attacking runs into scoring areas."},
+  "One-on-One Scorer": {description:"Improves effectiveness in one-on-one scoring situations."},
+  "One-on-One Stopper": {description:"Improves goalkeeper performance in one-on-one situations."},
+  "Playmaker": {description:"Improves passing influence and helps control the tempo of play."},
+  "Free Kick Specialist": {description:"Improves the accuracy and danger of direct free kicks."},
+  "Penalty Kick Specialist": {description:"Improves accuracy and effectiveness from the penalty spot."}
 };
 
 const PLAYSTYLES = {
-  "Goal Poacher": {positions:["ST"], description:"Focuses heavily on finding space in the box and finishing chances with high efficiency."},
-  "False Nine": {positions:["ST","AMC"], description:"Drops deep to link up play, pulling opposing central defenders out of position and switching between an attacker and a playmaker."},
-  "Target Man": {positions:["ST"], description:"Uses physical presence to hold up the ball, win aerial duels, and bring incoming wingers or midfielders into the attack."},
-  "Inside Forward": {positions:["AML","AMR"], description:"Cuts inside from the flanks toward the penalty area to shoot or create high-danger scoring opportunities."},
-  "False Winger": {positions:["ML","MR","AML","AMR"], description:"Operates wide but tucks inside or delays crosses to confuse fullbacks and create central passing lanes."},
-  "Box-to-Box": {positions:["MC"], description:"Covers immense ground, contributing actively to both defensive recovery and offensive support."},
-  "Regista": {positions:["MC","DMC"], description:"Acts as a deep-lying playmaker who dictates the tempo and launches attacks with precise long or short passes from deep areas."},
-  "Playmaker": {positions:["MC","AMC"], description:"Unlocks defences in the final third with visionary passing and decisive final-ball execution."},
-  "Ball Winner": {positions:["DMC","MC"], description:"Aggressively presses opponents, intercepts passes, and wins tackles to turn over possession."},
-  "Anchor Man": {positions:["DMC"], description:"Holds a disciplined position directly in front of the center-backs to shut down central threats."},
-  "Mezzala": {positions:["MC"], description:"Drifts into half-spaces during attacks to overload wide-central areas while maintaining central stability."},
-  "No-Nonsense DC": {positions:["DC"], description:"Clears the ball immediately under pressure without taking risks or playing fancy passes."},
-  "Stopper": {positions:["DC"], description:"Steps up aggressively to challenge attackers, excelling in tight marking and heavy tackling inside the box."},
-  "Ball-Playing DC": {positions:["DC"], description:"Combines defensive resilience with clean passing technique to initiate plays cleanly from the backline."},
-  "Full-Back / Wing-Back": {positions:["DL","DR"], description:"Patrols the flanks, supporting defensive shapes while overlapping to provide width and crosses."},
-  "Sweeper Keeper": {positions:["GK"], description:"Rushes off the line to sweep up through-balls and neutralize counter-attacks early."}
+  "Poacher": {description:"A striker focused on positioning, movement and finishing chances in the box."},
+  "False Nine": {description:"Drops into deeper areas to link play and pull defenders out of position."},
+  "Target Man": {description:"Uses strength and aerial ability to hold up the ball and bring teammates into play."},
+  "Inside Forward": {description:"Starts wide and drives inside to shoot or create central chances."},
+  "Winger": {description:"Stays wide to stretch the defence, carry the ball and deliver crosses."},
+  "Enganche": {description:"A creative attacking hub who receives between the lines and dictates the final pass."},
+  "False Winger": {description:"Starts wide but moves inside to create central overloads and passing lanes."},
+  "Complete Forward": {description:"Combines finishing, link play, movement and physical contribution across the attack."},
+  "Box-to-Box": {description:"Covers the pitch from defence to attack and contributes at both ends."},
+  "Mezzala": {description:"Moves into the half-spaces to combine, create overloads and support attacks."},
+  "Ball Winner": {description:"Presses, tackles and intercepts to regain possession for the team."},
+  "Anchor Man": {description:"Holds a disciplined position in front of the defence and protects the centre."},
+  "Playmaker": {description:"Takes responsibility for creative passing and controlling attacking tempo."},
+  "Regista": {description:"Deep-lying playmaker who dictates rhythm and starts attacks from deep."},
+  "Holding Midfielder": {description:"Prioritises defensive structure, positioning and safe possession in midfield."},
+  "Wing Back": {description:"Provides width with overlapping runs while still contributing defensively."},
+  "Box Commander": {description:"Leads the defensive line, organising positioning and commanding the box."},
+  "Ball Playing DC": {description:"Combines defensive work with confident passing from the back."},
+  "Stopper": {description:"Steps out aggressively to confront attackers and disrupt attacks early."},
+  "Sweeper Keeper": {description:"Acts proactively behind the defence, sweeping through-balls and starting play."},
+  "Full Back": {description:"Defends the flank, supports the build-up and provides width when required."},
+  "No-Nonsense DC": {description:"Prioritises defensive safety, clearances and simple decisions under pressure."}
 };
 
 function normaliseAbilities(data){
@@ -942,90 +1025,60 @@ function normalisePlaystyle(data){
   return Object.prototype.hasOwnProperty.call(PLAYSTYLES, raw) ? raw : '';
 }
 
-function normalisePosition(position){
-  return String(position||'').trim().toUpperCase();
-}
-
-function availablePlaystylesFor(position){
-  const pos=normalisePosition(position);
-  return Object.entries(PLAYSTYLES).filter(([,p])=>p.positions.includes(pos));
-}
+function normalisePosition(position){ return String(position||'').trim().toUpperCase(); }
+function availablePlaystylesFor(){ return Object.entries(PLAYSTYLES); }
 
 function renderPlaystylePicker(containerId, position, selected='', disabled=false){
   const el=document.getElementById(containerId); if(!el) return;
-  const pos=normalisePosition(position);
   const chosen=normalisePlaystyle({playstyle:selected});
-  const available=availablePlaystylesFor(pos);
-  if(!available.length){
-    el.innerHTML=pos ? `<div class="ability-empty">No playstyles are available for <b>${escapeHtml(pos)}</b>. Choose a playstyle only from this position's list.</div>` : '<div class="ability-empty">Select a player position to see compatible playstyles.</div>';
-    const countId=containerId==='addPlaystylePicker'?'addPlaystyleCount':null; if(countId) document.getElementById(countId).textContent='0 / 1';
-    return;
-  }
-  const validSelected=available.some(([name])=>name===chosen)?chosen:'';
+  const available=availablePlaystylesFor();
   el.innerHTML=available.map(([name,p])=>{
-    const checked=validSelected===name;
+    const checked=chosen===name;
     return `<label class="playstyle-option ${disabled?'disabled':''}"><input type="radio" name="${containerId}-playstyle" data-playstyle="${escapeHtml(name)}" ${checked?'checked':''} ${disabled?'disabled':''}><span><div class="playstyle-option-title">${escapeHtml(name)}</div><div class="playstyle-option-desc">${escapeHtml(p.description)}</div></span></label>`;
   }).join('');
   const countId=containerId==='addPlaystylePicker'?'addPlaystyleCount':null;
-  const update=()=>{ if(countId){const chosenNow=el.querySelector('input[data-playstyle]:checked'); document.getElementById(countId).textContent=`${chosenNow?1:0} / 1`;}};
-  el.querySelectorAll('input[data-playstyle]').forEach(box=>box.addEventListener('change',update));
-  update();
+  const update=()=>{ if(countId){const chosenNow=el.querySelector('input[data-playstyle]:checked'); document.getElementById(countId).textContent=`${chosenNow?1:0} / 1`;} };
+  el.querySelectorAll('input[data-playstyle]').forEach(box=>box.addEventListener('change',update)); update();
 }
 
-function getSelectedPlaystyle(containerId){
-  return document.querySelector(`#${containerId} input[data-playstyle]:checked`)?.getAttribute('data-playstyle') || '';
-}
-
-function renderPlaystyleChip(containerId, playstyle){
-  const el=document.getElementById(containerId); if(!el) return;
-  const value=normalisePlaystyle({playstyle});
-  el.innerHTML=value ? `<span class="playstyle-chip">${escapeHtml(value)}</span>` : '<div class="ability-empty">No playstyle assigned.</div>';
-}
+function getSelectedPlaystyle(containerId){ return document.querySelector(`#${containerId} input[data-playstyle]:checked`)?.getAttribute('data-playstyle') || ''; }
+function renderPlaystyleChip(containerId, playstyle){ const el=document.getElementById(containerId); if(!el) return; const value=normalisePlaystyle({playstyle}); el.innerHTML=value?`<span class="playstyle-chip">${escapeHtml(value)}</span>`:'<div class="ability-empty">No playstyle assigned.</div>'; }
 
 function renderAbilityPicker(containerId, position, selected=[], disabled=false){
   const el=document.getElementById(containerId); if(!el) return;
   const chosen=normaliseAbilities({specialAbilities:selected});
-  const available=Object.entries(SPECIAL_ABILITIES).filter(([,a])=>a.positions.includes(position));
-  if(!available.length){ el.innerHTML='<div class="ability-empty">No special abilities are available for this position.</div>'; return; }
+  const available=Object.entries(SPECIAL_ABILITIES);
   el.innerHTML=available.map(([name,a])=>{
     const checked=chosen.includes(name);
     return `<label class="ability-option ${disabled?'disabled':''}"><input type="checkbox" data-ability="${escapeHtml(name)}" ${checked?'checked':''} ${disabled?'disabled':''}><span><div class="ability-option-title">${escapeHtml(name)}</div><div class="ability-option-desc">${escapeHtml(a.description)}</div></span></label>`;
   }).join('');
   const update=()=>{
-    const boxes=[...el.querySelectorAll('input[data-ability]')];
-    const checked=boxes.filter(x=>x.checked);
+    const boxes=[...el.querySelectorAll('input[data-ability]')]; const checked=boxes.filter(x=>x.checked);
     if(checked.length>2){ checked[checked.length-1].checked=false; return; }
     boxes.forEach(x=>x.closest('.ability-option')?.classList.toggle('disabled', disabled || (checked.length>=2 && !x.checked)));
-    const countId=containerId==='addAbilityPicker'?'addAbilityCount':null;
-    if(countId) document.getElementById(countId).textContent=`${checked.length} / 2`;
+    const countId=containerId==='addAbilityPicker'?'addAbilityCount':null; if(countId) document.getElementById(countId).textContent=`${checked.length} / 2`;
   };
-  el.querySelectorAll('input[data-ability]').forEach(box=>box.addEventListener('change',update));
-  update();
+  el.querySelectorAll('input[data-ability]').forEach(box=>box.addEventListener('change',update)); update();
+}
+function getSelectedAbilities(containerId){ return [...document.querySelectorAll(`#${containerId} input[data-ability]:checked`)].map(x=>x.getAttribute('data-ability')).slice(0,2); }
+function renderAbilityChips(containerId, abilities){ const el=document.getElementById(containerId); if(!el) return; const list=normaliseAbilities({specialAbilities:abilities}); el.innerHTML=list.length?list.map(a=>`<span class="ability-chip">${escapeHtml(a)}</span>`).join(''):'<div class="ability-empty">No special abilities assigned.</div>'; }
+
+function roleColorOf(pos){
+  if(pos === 'GK') return '#4AA8FF';
+  if(['DL','DC','DR'].includes(pos)) return '#3ED98B';
+  if(['DMC','DMR','DML','ML','MR','MC'].includes(pos)) return '#FFD84A';
+  if(['AML','AMR','AMC','ST'].includes(pos)) return '#FF5A6E';
+  return 'var(--ink-faint)';
 }
 
-function getSelectedAbilities(containerId){
-  return [...document.querySelectorAll(`#${containerId} input[data-ability]:checked`)].map(x=>x.getAttribute('data-ability')).slice(0,2);
+function escapeHtml(value){
+  return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-
-function renderAbilityChips(containerId, abilities){
-  const el=document.getElementById(containerId); if(!el) return;
-  const list=normaliseAbilities({specialAbilities:abilities});
-  el.innerHTML=list.length ? list.map(a=>`<span class="ability-chip">${escapeHtml(a)}</span>`).join('') : '<div class="ability-empty">No special abilities assigned.</div>';
-}
-
-
-let currentPosition = "";
-let currentPlayerKey = null;
-let trainingPlayerKey = null;
-let editingPlayerKey = null;
-let profileEditMode = false;
-let addPlayerSkills = {};
-let pendingPlayerImage = "";
-let disabledDrills = new Set();
 
 function isGK(pos){ return pos === 'GK'; }
 function skillsFor(pos){ return isGK(pos) ? GK_APPLICABLE_POOL : OUTFIELD_SKILLS; }
-function groupsFor(pos){ return isGK(pos) ? GROUPS_GK : GROUPS_OUTFIELD; }
+function groupsFor(pos){ return isGK(pos) ? {"Goalkeeping":GK_SKILLS,"Defence":GROUPS_OUTFIELD.Defence,"Attack":GROUPS_OUTFIELD.Attack,"Physical":GROUPS_OUTFIELD.Physical} : GROUPS_OUTFIELD; }
+function displaySkillsFor(pos){ return isGK(pos) ? GK_SKILLS.concat(OUTFIELD_SKILLS) : OUTFIELD_SKILLS; }
 function defaultsFor(pos){ return isGK(pos) ? DEFAULTS_GK : DEFAULTS_OUTFIELD; }
 
 // Splits a drill's skills into white / grey / not-applicable for a given position.
@@ -1412,11 +1465,44 @@ function escapeHtml(value){
   return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+
+const POSITION_ORDER = {GK:1,DL:2,DC:3,DR:4,DML:5,DMC:6,DMR:7,ML:8,MC:9,MR:10,AML:11,AMC:12,AMR:13,ST:14};
+const ALL_POSITION_CODES = Object.keys(POSITION_ORDER);
+function normaliseRoles(data){
+  const raw=Array.isArray(data?.roles)?data.roles:(data?.position?[data.position]:[]);
+  const roles=[]; raw.forEach(r=>{const p=normalisePosition(r); if(ALL_POSITION_CODES.includes(p)&&!roles.includes(p)) roles.push(p);});
+  const primary=normalisePosition(data?.position); if(primary && ALL_POSITION_CODES.includes(primary) && !roles.includes(primary)) roles.unshift(primary);
+  return roles.slice(0,3);
+}
+function playerRoles(player){ const roles=normaliseRoles(player); return roles.length?roles:[normalisePosition(player.position)]; }
+function setCurrentRoles(roles, primary){
+  currentRoles=[...new Set((roles||[]).map(normalisePosition).filter(r=>ALL_POSITION_CODES.includes(r)))].slice(0,3);
+  if(primary){const p=normalisePosition(primary); if(currentRoles.includes(p)){currentRoles=[p,...currentRoles.filter(r=>r!==p)];}}
+  currentPosition=currentRoles[0]||'';
+  renderDetectedRoles();
+}
+function renderDetectedRoles(){
+  const panel=document.getElementById('detectedRolesPanel'), list=document.getElementById('detectedRoleList'), count=document.getElementById('roleCountLabel');
+  if(!panel||!list) return;
+  if(!currentRoles.length){panel.style.display='none';list.innerHTML='';if(count)count.textContent='0 / 3';return;}
+  panel.style.display='block'; if(count)count.textContent=`${currentRoles.length} / 3`;
+  list.innerHTML=currentRoles.map(r=>`<button type="button" class="detected-role-btn ${r===currentPosition?'selected':''}" data-role-select="${r}">${r}${r===currentPosition?' · PRIMARY':''}</button>`).join('');
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-role-select]'); if(!b) return;
+  const role=b.getAttribute('data-role-select');
+  if(!currentRoles.includes(role)) return;
+  currentRoles=[role,...currentRoles.filter(r=>r!==role)]; currentPosition=role;
+  const pos=document.getElementById('posSelect'); if(pos)pos.value=role;
+  renderDetectedRoles();
+  renderAddSkillPreview(addPlayerSkills,currentPosition); renderSkillGroups(); renderDrillList();
+});
+
 async function populateTrainingPlayerPicker(selectedKey = trainingPlayerKey){
   const select = document.getElementById('trainingPlayerSelect');
   if(!select) return;
   const players = await getAllPlayers();
-  players.sort((a,b) => String(a.name||'').localeCompare(String(b.name||''), undefined, {sensitivity:'base'}));
+  players.sort((a,b) => (POSITION_ORDER[a.position]||99)-(POSITION_ORDER[b.position]||99) || String(a.name||'').localeCompare(String(b.name||''), undefined, {sensitivity:'base'}));
   const previous = selectedKey || '';
   select.innerHTML = '<option value="">— Select a player —</option>' + players.map(p => {
     const key = p.key || '';
@@ -1443,7 +1529,8 @@ async function selectTrainingPlayer(key){
   const data = await loadRawPlayer(key);
   if(!data){ clearTrainingView('Could not load that player.'); return; }
   trainingPlayerKey = key;
-  currentPosition = data.position || '';
+  currentRoles = normaliseRoles(data);
+  currentPosition = currentRoles[0] || data.position || '';
   renderSkillGroups();
   Object.entries(data.skills || {}).forEach(([skill,val]) => {
     const el = document.getElementById(`skill-${skill}`);
@@ -1474,7 +1561,7 @@ async function renderSquadGrid(){
   const emptyState = document.getElementById('squadEmptyState');
   if(!container) return;
   const players = await getAllPlayers();
-  const positionOrder = {GK:1,DL:2,DC:3,DR:4,DML:5,DMC:6,DMR:7,ML:8,MC:9,MR:10,AML:11,AMC:12,AMR:13,ST:14};
+  const positionOrder = POSITION_ORDER;
   players.sort((a,b)=>{
     const ai=positionOrder[a.position]||99, bi=positionOrder[b.position]||99;
     if(ai!==bi) return ai-bi;
@@ -1566,7 +1653,8 @@ async function savePlayer(){
   const selectedPlaystyle=getSelectedPlaystyle('addPlaystylePicker');
   const existing=await loadRawPlayer(key);
   const createdAt=existing?.createdAt||new Date().toISOString();
-  const payload={...(existing||{}),name,position:currentPosition,skills:{...addPlayerSkills},age:document.getElementById('ageInput').value.trim()===''?null:Number(document.getElementById('ageInput').value),ovr:document.getElementById('ovrInput').value.trim()===''?null:Number(document.getElementById('ovrInput').value),specialAbilities:selectedAbilities,specialAbility:'',playstyle:selectedPlaystyle,profileImage:pendingPlayerImage||existing?.profileImage||'',createdAt,updatedAt:new Date().toISOString()};
+  const savedRoles=[...new Set([currentPosition,...currentRoles].filter(Boolean))].slice(0,3);
+  const payload={...(existing||{}),name,position:currentPosition,roles:savedRoles,skills:{...addPlayerSkills},age:document.getElementById('ageInput').value.trim()===''?null:Number(document.getElementById('ageInput').value),ovr:document.getElementById('ovrInput').value.trim()===''?null:Number(document.getElementById('ovrInput').value),specialAbilities:selectedAbilities,specialAbility:'',playstyle:selectedPlaystyle,profileImage:pendingPlayerImage||existing?.profileImage||'',createdAt,updatedAt:new Date().toISOString()};
   statusEl.innerHTML='<span class="spinner"></span>Saving player…';
   const btn=document.getElementById('saveBtn'); btn.disabled=true;
   try{
@@ -1595,8 +1683,8 @@ async function loadPlayerByKey(key){
     data.specialAbility='';
     currentPlayerKey=key;
     if(document.getElementById('posSelect')){
-      currentPosition=data.position||'';
-      document.getElementById('posSelect').value=currentPosition;
+      currentRoles=normaliseRoles(data); currentPosition=currentRoles[0]||data.position||'';
+      document.getElementById('posSelect').value=currentPosition; renderDetectedRoles();
     }
     if(document.getElementById('nameInput')) document.getElementById('nameInput').value=data.name||'';
     if(document.getElementById('ageInput')) document.getElementById('ageInput').value=data.age??'';
@@ -1929,6 +2017,21 @@ async function makeOvrOCR(dataUrl){
   });
 }
 
+async function makeRolesOCR(dataUrl){
+  return new Promise((resolve,reject)=>{
+    const img=new Image(); img.onload=async()=>{ try{
+      // The Roles chips sit in the upper-middle/right header of the standard
+      // Top Eleven Skills screen. A focused pass avoids confusing skill labels
+      // with position codes and can read up to three visible roles.
+      const sx=img.width*0.53, sy=img.height*0.16, sw=img.width*0.23, sh=img.height*0.14;
+      const c=document.createElement('canvas'); c.width=Math.max(1,Math.floor(sw*4)); c.height=Math.max(1,Math.floor(sh*4));
+      c.getContext('2d').drawImage(img,sx,sy,sw,sh,0,0,c.width,c.height);
+      const r=await Tesseract.recognize(c.toDataURL('image/png'),'eng',{logger:()=>{},config:{tessedit_pageseg_mode:'11',tessedit_char_whitelist:'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'}});
+      resolve(String(r.data?.text||''));
+    }catch(e){reject(e);} }; img.onerror=()=>reject(new Error('Could not prepare roles crop')); img.src=dataUrl;
+  });
+}
+
 async function scanImage(dataUrl){
   const preservedAbilities=getSelectedAbilities('addAbilityPicker');
   const status = document.getElementById('scanStatus');
@@ -2008,19 +2111,23 @@ async function scanImage(dataUrl){
     // this catches dual-role players (e.g. "DL DC" shown side by side) since
     // it just takes the first valid code encountered, and doesn't depend on
     // the word "Roles" being read correctly at all.
-    const POSITION_CODES = Object.keys(POSITION_WHITE);
-    let detectedRole = '';
+    const POSITION_CODES = ALL_POSITION_CODES;
+    let detectedRoles = [];
+    // Roles live in the player header, around the Roles label. Restrict the OCR
+    // search to the upper third and collect every distinct position code found.
     for(const row of rowsSortedByY){
+      if(row.cy > Math.min(340, Math.max(...words.map(w=>w.bbox.y1),1000)*0.34)) continue;
       for(const w of row.words){
         const t = w.text.trim().toUpperCase();
-        if(POSITION_CODES.includes(t)){ detectedRole = t; break; }
+        if(POSITION_CODES.includes(t) && !detectedRoles.includes(t)) detectedRoles.push(t);
       }
-      if(detectedRole) break;
     }
-    if(!detectedRole){
+    if(!detectedRoles.length){
       const gkHits = GK_SKILLS.filter(s => foundSkills[s] !== undefined).length;
-      if(gkHits >= 3) detectedRole = 'GK';
+      if(gkHits >= 3) detectedRoles=['GK'];
     }
+    detectedRoles=detectedRoles.slice(0,3);
+    const detectedRole = detectedRoles[0] || '';
 
     let headerMeta = detectHeaderMetadata(words, rows, data.text || '', Math.max(...words.map(w=>w.bbox.y1), 1000), Math.max(...words.map(w=>w.bbox.x1), 1000));
     // Focused header OCR gets a separate chance to read the name/OVR/age.
@@ -2051,14 +2158,22 @@ async function scanImage(dataUrl){
     // header OCR because the large white OVR digits are often segmented poorly
     // by full-screen OCR even though they are visually obvious.
     try{ const rescueOvr=await makeOvrOCR(dataUrl); if(rescueOvr!==null) headerMeta.ovr=rescueOvr; }catch(_){ }
+    try{
+      const roleText=await makeRolesOCR(dataUrl);
+      const roleMatches=[...roleText.toUpperCase().matchAll(/\b(?:GK|DL|DC|DR|DML|DMC|DMR|ML|MC|MR|AML|AMC|AMR|ST)\b/g)].map(m=>m[0]);
+      roleMatches.forEach(r=>{if(!detectedRoles.includes(r))detectedRoles.push(r);});
+      detectedRoles=detectedRoles.slice(0,3);
+    }catch(_){ }
+    if(detectedRoles.length){ detectedRole=detectedRoles[0]; }
     const detectedName = headerMeta.name;
     const detectedAge = headerMeta.age;
     const detectedOvr = headerMeta.ovr;
     const detectedSpecialAbility = '';
 
     if(detectedRole && POSITION_WHITE[detectedRole]){
+      currentRoles=detectedRoles; currentPosition=detectedRole;
       document.getElementById('posSelect').value = detectedRole;
-      currentPosition = detectedRole;
+      renderDetectedRoles();
     }
 
     if(detectedAge !== null) document.getElementById('ageInput').value = detectedAge;
@@ -2097,8 +2212,7 @@ async function scanImage(dataUrl){
     renderDrillList();
     renderAbilityPicker('addAbilityPicker', currentPosition, preservedAbilities, false);
     const preservedPlaystyle=getSelectedPlaystyle('addPlaystylePicker');
-    const playstyleStillValid=availablePlaystylesFor(currentPosition).some(([name])=>name===preservedPlaystyle);
-    renderPlaystylePicker('addPlaystylePicker', currentPosition, playstyleStillValid?preservedPlaystyle:'', false);
+    renderPlaystylePicker('addPlaystylePicker', currentPosition, preservedPlaystyle, false);
 
     const missingMeta = [];
     if(!detectedName) missingMeta.push('name');
@@ -2130,12 +2244,13 @@ document.getElementById('saveBtn').addEventListener('click', savePlayer);
 document.getElementById('buildBtn').addEventListener('click', buildSession);
 
 function clearPlayerForm(){
-  editingPlayerKey=null; currentPosition=''; addPlayerSkills={}; pendingPlayerImage='';
+  editingPlayerKey=null; currentPosition=''; currentRoles=[]; addPlayerSkills={}; pendingPlayerImage='';
   document.getElementById('nameInput').value='';
   document.getElementById('ageInput').value='';
   document.getElementById('ovrInput').value='';
   document.getElementById('playerTag').textContent='';
   document.getElementById('posSelect').value='';
+  renderDetectedRoles();
   document.getElementById('saveBtn').textContent='💾 Save Player';
   document.getElementById('addPlayerTitle').textContent='Add Player';
   document.getElementById('addPlayerSubtitle').textContent='Upload a Skills screenshot, review the scan, choose their role and special abilities, then save them to My Squad.';
@@ -2158,7 +2273,7 @@ renderDrillList();
 // ============================================================
 // PAGE NAVIGATION SHELL
 // ============================================================
-const PAGES = ['dashboard','squad','add-player','training','player','formation','mentors','tactics','settings'];
+const PAGES = ['dashboard','squad','add-player','training','player','formation','playmakers','mentors','tactics','settings'];
 let currentPage='dashboard';
 let suppressHistory=false;
 
@@ -2185,12 +2300,13 @@ function showPage(pageId, persist=true, options={}){
     renderAddSkillPreview(addPlayerSkills,currentPosition);
   }
   if(pageId==='training') populateTrainingPlayerPicker(trainingPlayerKey);
+  if(pageId==='playmakers') renderPlaymakers();
   if(pageId==='mentors') renderMentors();
-  if(pageId==='tactics') renderTactics();
+  if(pageId==='tactics'){ renderTactics(); renderTacticalPresets(); }
 }
 
 function navigateBackFallback(){
-  const fallback={player:'squad','training':'squad','add-player':'squad',squad:'dashboard',formation:'dashboard',mentors:'dashboard',tactics:'dashboard',settings:'dashboard'};
+  const fallback={player:'squad','training':'squad','add-player':'squad',squad:'dashboard',formation:'dashboard',playmakers:'dashboard',mentors:'dashboard',tactics:'dashboard',settings:'dashboard'};
   showPage(fallback[currentPage]||'dashboard');
 }
 
@@ -2212,7 +2328,7 @@ if(hamburgerBtn) hamburgerBtn.addEventListener('click', toggleNavDrawer);
 const navDrawerOverlay = document.getElementById('navDrawerOverlay');
 if(navDrawerOverlay) navDrawerOverlay.addEventListener('click', closeNavDrawer);
 const navDrawerVersion = document.getElementById('navDrawerVersion');
-if(navDrawerVersion) navDrawerVersion.textContent = 'v2.10.0';
+if(navDrawerVersion) navDrawerVersion.textContent = 'v3.0.0';
 
 document.querySelectorAll('.nav-item').forEach(el => {
   el.addEventListener('click', () => { showPage(el.getAttribute('data-page')); closeNavDrawer(); });
@@ -2253,6 +2369,16 @@ async function renderDashboard(){
   if(content) content.style.display = 'block';
 
   document.getElementById('statTotalPlayers').textContent = players.length;
+  const ovrs=players.map(p=>Number(p.ovr||0)).filter(v=>v>0);
+  const avgOvr=ovrs.length?Math.round(ovrs.reduce((a,b)=>a+b,0)/ovrs.length):'—';
+  const top=[...players].sort((a,b)=>Number(b.ovr||0)-Number(a.ovr||0))[0];
+  document.getElementById('statAvgOvr').textContent=avgOvr; document.getElementById('statTopOvr').textContent=top?.ovr||'—';
+  document.getElementById('statRolesCovered').textContent=new Set(players.flatMap(playerRoles)).size;
+  const strongest=top?.name||'—'; document.getElementById('dashTopPlayer').textContent=strongest;
+  const groupAvg=(names)=>{const vals=players.map(p=>avgSkill(p,names)).filter(v=>v>0);return vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):'—';};
+  document.getElementById('dashDefAvg').textContent=groupAvg(['Tackling','Marking','Positioning','Heading','Bravery']);
+  document.getElementById('dashMidAvg').textContent=groupAvg(['Passing','Dribbling','Creativity','Positioning']);
+  document.getElementById('dashAttAvg').textContent=groupAvg(['Shooting','Finishing','Dribbling','Creativity']);
 
   const byCategory = {};
   players.forEach(p => {
@@ -2264,6 +2390,9 @@ async function renderDashboard(){
     .filter(c => byCategory[c])
     .map(c => `<div class="dash-row"><span>${c}</span><span>${byCategory[c]}</span></div>`)
     .join('') || '<div class="dash-row"><span>No roles set yet</span></div>';
+
+  const coverageEl=document.getElementById('dashPositionCoverage');
+  if(coverageEl){ coverageEl.innerHTML=Object.keys(POSITION_ORDER).map(pos=>{const n=players.filter(p=>playerRoles(p).includes(pos)).length;return `<div class="dash-row"><span>${pos}</span><span style="color:${n?'var(--turf)':'var(--ink-faint)'}">${n}</span></div>`;}).join(''); }
 
   const incomplete = players.filter(isIncompleteScan);
   const attentionEl = document.getElementById('statNeedsAttention');
@@ -2285,7 +2414,7 @@ async function renderDashboard(){
 async function savePlayerRecordByKey(key, changes){
   const data=await loadRawPlayer(key);
   if(!data) return false;
-  const updated={...data,...changes,updatedAt:new Date().toISOString(),specialAbilities:normaliseAbilities(changes),playstyle:normalisePlaystyle(changes),specialAbility:''};
+  const updated={...data,...changes,updatedAt:new Date().toISOString(),roles:normaliseRoles(changes),specialAbilities:normaliseAbilities(changes),playstyle:normalisePlaystyle(changes),specialAbility:''};
   await window.storage.set(key,JSON.stringify(updated),false);
   return updated;
 }
@@ -2300,7 +2429,7 @@ function setProfileEditMode(enabled){
 
 function renderProfileSkills(data, editable=false){
   const barsEl=document.getElementById('profileBars'); if(!barsEl) return;
-  const position=data.position||''; const white=POSITION_WHITE[position]||[]; const pool=skillsFor(position);
+  const position=data.position||''; const white=POSITION_WHITE[position]||[]; const pool=displaySkillsFor(position);
   if(!position){barsEl.innerHTML='<div class="ability-empty">No role assigned.</div>';return;}
   barsEl.innerHTML=pool.map(s=>{
     const val=Number((data.skills||{})[s]||0); const isWhite=white.includes(s); const pct=Math.min(val/220*100,100);
@@ -2319,7 +2448,7 @@ async function openPlayerProfile(key,pushHistory=true){
   const abilities=normaliseAbilities(data);
   document.getElementById('profileName').value=data.name||'';
   document.getElementById('profilePosition').value=data.position||'';
-  document.getElementById('profileMeta').textContent=roleCategoryOf(data.position)+(data.updatedAt?' · updated '+new Date(data.updatedAt).toLocaleDateString():'');
+  document.getElementById('profileMeta').textContent=roleCategoryOf(data.position)+' · Roles: '+normaliseRoles(data).join(' / ')+(data.updatedAt?' · updated '+new Date(data.updatedAt).toLocaleDateString():'');
   document.getElementById('profileAge').value=data.age??'';
   document.getElementById('profileOvr').value=data.ovr??'';
   renderAbilityChips('profileAbilities',abilities);
@@ -2361,9 +2490,7 @@ const profilePositionEl=document.getElementById('profilePosition');
 if(profilePositionEl) profilePositionEl.addEventListener('change',()=>{
   if(!profileEditMode) return;
   const position=normalisePosition(profilePositionEl.value);
-  const current=getSelectedPlaystyle('profilePlaystylePicker');
-  const valid=availablePlaystylesFor(position).some(([name])=>name===current);
-  renderPlaystylePicker('profilePlaystylePicker',position,valid?current:'',false);
+  renderPlaystylePicker('profilePlaystylePicker',position,getSelectedPlaystyle('profilePlaystylePicker'),false);
 });
 
 const profileSaveBtn=document.getElementById('profileSaveBtn');
@@ -2373,9 +2500,12 @@ if(profileSaveBtn) profileSaveBtn.addEventListener('click',async()=>{
   const position=document.getElementById('profilePosition').value;
   const skills={};
   skillsFor(position).forEach(s=>{const el=document.querySelector(`[data-profile-skill="${CSS.escape(s)}"]`);if(el)skills[s]=Number(el.value)||0;});
+  const chosenProfileRoles=normaliseRoles(old);
+  const selectedProfilePosition=normalisePosition(position);
   const changes={
     name:document.getElementById('profileName').value.trim(),
     position,
+    roles:[selectedProfilePosition,...chosenProfileRoles.filter(r=>r!==selectedProfilePosition)].slice(0,3),
     age:document.getElementById('profileAge').value.trim()===''?null:Number(document.getElementById('profileAge').value),
     ovr:document.getElementById('profileOvr').value.trim()===''?null:Number(document.getElementById('profileOvr').value),
     skills,
@@ -2395,11 +2525,12 @@ if(profileUpdateBtn) profileUpdateBtn.addEventListener('click',async()=>{
   if(!currentPlayerKey)return;
   const data=await loadRawPlayer(currentPlayerKey); if(!data)return;
   editingPlayerKey=currentPlayerKey;
-  currentPosition=data.position||'';
+  currentRoles=normaliseRoles(data); currentPosition=currentRoles[0]||data.position||'';
   document.getElementById('nameInput').value=data.name||'';
   document.getElementById('ageInput').value=data.age??'';
   document.getElementById('ovrInput').value=data.ovr??'';
   document.getElementById('posSelect').value=currentPosition;
+  renderDetectedRoles();
   document.getElementById('playerTag').textContent=data.name?`— ${data.name}`:'';
   addPlayerSkills={...(data.skills||{})}; pendingPlayerImage=data.profileImage||'';
   renderAbilityPicker('addAbilityPicker',currentPosition,normaliseAbilities(data),false);
@@ -2445,15 +2576,16 @@ if(trainingPlayerSelect){
   trainingPlayerSelect.addEventListener('change', e => selectTrainingPlayer(e.target.value));
 }
 
-// Initial load
+// Initial load — every fresh launch starts on Dashboard. Squad data remains intact,
+// but transient training/formation/tactical views are deliberately reset.
 renderDashboard();
 renderSquadGrid();
-let initialPage='dashboard'; let initialPlayerKey=null;
-try{initialPage=localStorage.getItem('te:lastPage')||'dashboard';initialPlayerKey=localStorage.getItem('te:lastPlayerKey')||null;}catch(_){}
-if(initialPlayerKey) currentPlayerKey=initialPlayerKey;
-if(location.hash){const hp=location.hash.slice(1).split('?')[0];if(PAGES.includes(hp))initialPage=hp;}
-if(initialPage==='player' && initialPlayerKey) openPlayerProfile(initialPlayerKey,false);
-else showPage(PAGES.includes(initialPage)?initialPage:'dashboard',false);
+let initialPlayerKey=null;
+try{initialPlayerKey=localStorage.getItem('te:lastPlayerKey')||null;localStorage.setItem('te:lastPage','dashboard');}catch(_){}
+currentPage='dashboard';
+clearTrainingView('Select a saved player to load their skills.');
+try{window.storage.delete('formation:last',false).catch(()=>{});window.storage.delete('tactics:current',false).catch(()=>{});}catch(_){}
+showPage('dashboard',false,{force:true});
 
 
 // ============================================================
@@ -2462,146 +2594,100 @@ else showPage(PAGES.includes(initialPage)?initialPage:'dashboard',false);
 const FORMATIONS = [
   {name:'4-4-2', slots:['GK','DL','DC','DC','DR','ML','MC','MC','MR','ST','ST']},
   {name:'4-3-3', slots:['GK','DL','DC','DC','DR','MC','MC','MC','AML','ST','AMR']},
-  {name:'4-2-3-1', slots:['GK','DL','DC','DC','DR','DMC','DMC','AML','AMC','AMR','ST']},
+  {name:'4-2-3-1', slots:['GK','DL','DC','DC','DR','DMC/MC','DMC/MC','AML','AMC','AMR','ST']},
   {name:'3-5-2', slots:['GK','DC','DC','DC','ML','MC','MC','MC','MR','ST','ST']},
   {name:'4-5-1', slots:['GK','DL','DC','DC','DR','DMC','ML','MC','MR','AMC','ST']},
   {name:'4-1-2-1-2', slots:['GK','DL','DC','DC','DR','DMC','MC','MC','AMC','ST','ST']}
 ];
-
 const PLAYSTYLE_BONUS = {
-  'Goal Poacher': ['ST'], 'False Nine':['ST','AMC'], 'Target Man':['ST'], 'Inside Forward':['AML','AMR'], 'False Winger':['ML','MR','AML','AMR'],
-  'Box-to-Box':['MC'], 'Regista':['MC','DMC'], 'Playmaker':['MC','AMC'], 'Ball Winner':['DMC','MC'], 'Anchor Man':['DMC'], 'Mezzala':['MC'],
-  'No-Nonsense DC':['DC'], 'Stopper':['DC'], 'Ball-Playing DC':['DC'], 'Full-Back / Wing-Back':['DL','DR'], 'Sweeper Keeper':['GK']
+  'Poacher':['ST'],'False Nine':['ST','AMC'],'Target Man':['ST'],'Inside Forward':['AML','AMR'],'Winger':['ML','MR','AML','AMR'],'Enganche':['AMC'],'False Winger':['ML','MR','AML','AMR'],'Complete Forward':['ST','AMC'],
+  'Box-to-Box':['MC'],'Mezzala':['MC'],'Ball Winner':['DMC','MC'],'Anchor Man':['DMC'],'Playmaker':['DMC','MC','AMC'],'Regista':['DMC','MC'],'Holding Midfielder':['DMC','MC'],'Wing Back':['DL','DR','DML','DMR'],'Box Commander':['DC'],'Ball Playing DC':['DC'],'Stopper':['DC'],'Sweeper Keeper':['GK'],'Full Back':['DL','DR'],'No-Nonsense DC':['DC']
 };
 const ABILITY_BONUS = {
-  'One-on-One Stopper':['GK'],'Penalty Kick Stopper':['GK'],'Defensive Wall':['DR','DL','DC','DMR','DML'],'Aerial Defender':['DR','DL','DC','DMR','DML'],
-  'Playmaker':['DMC','MR','ML','MC','AMC'],'One-on-One Scorer':['AMR','AML','AMC','ST'],'Penalty Kick Specialist':['DMC','MR','ML','MC','AMR','AML','AMC','ST'],
-  'Free Kick Specialist':['DMC','MR','ML','MC','AMR','AML','AMC','ST'],'Corner Specialist':['DMC','MR','ML','MC','AMR','AML','AMC','ST'],'Shadow Striker':['AMR','AML','AMC','ST'],'Dribbler':['MR','ML','MC','AMR','AML','AMC','ST']
+  'Penalty Kick Stopper':['GK'],'Defensive Wall':['DR','DL','DC','DMR','DML'],'Aerial Defender':['DR','DL','DC','DMR','DML'],'Dribbler':['MR','ML','MC','AMR','AML','AMC'],
+  'Corner Specialist':['DMC','MR','ML','MC','AMR','AML','AMC','ST'],'Shadow Striker':['AMR','AML','AMC','ST'],'One-on-One Scorer':['AMR','AML','AMC','ST'],'One-on-One Stopper':['GK'],'Playmaker':['DMC','MR','ML','MC','AMC'],
+  'Free Kick Specialist':['DMC','MR','ML','MC','AMR','AML','AMC','ST'],'Penalty Kick Specialist':['DR','DL','DC','DMC','MR','ML','MC','AMR','AML','AMC','ST']
 };
-
+function slotOptions(slot){ return String(slot).split('/').map(s=>normalisePosition(s)).filter(Boolean); }
 function formationPositionFit(playerPos, slot){
-  const p=normalisePosition(playerPos), s=normalisePosition(slot);
-  if(p===s) return 1;
+  const roles=Array.isArray(playerPos)?playerPos.map(normalisePosition):playerRoles({position:playerPos});
+  const opts=slotOptions(slot); if(roles.some(r=>opts.includes(r))) return 1;
+  const p=roles[0]||'';
   const adjacent={GK:[],DL:['DR','DML'],DR:['DL','DMR'],DC:['DMC','DL','DR'],DML:['DL','DMC','ML'],DMR:['DR','DMC','MR'],DMC:['MC','DC','DML','DMR'],ML:['MR','MC','DML','AML'],MR:['ML','MC','DMR','AMR'],MC:['DMC','ML','MR','AMC'],AML:['AMR','ML','AMC'],AMR:['AML','MR','AMC'],AMC:['MC','AML','AMR','ST'],ST:['AMC','AMR','AML']};
-  return (adjacent[p]||[]).includes(s)?0.55:0.12;
+  return opts.some(o=>(adjacent[p]||[]).includes(o))?0.28:0.03;
 }
-
 function roleSkillScore(player, slot){
-  const s=player.skills||{}; const white=POSITION_WHITE[player.position]||[]; const keyBySlot={
+  const s=player.skills||{}; const primary=slotOptions(slot)[0]; const keyBySlot={
     GK:['Reflexes','Agility','Anticipation','Rushing Out','Communication'],DL:['Tackling','Marking','Positioning','Crossing','Speed'],DR:['Tackling','Marking','Positioning','Crossing','Speed'],
     DC:['Tackling','Marking','Positioning','Heading','Bravery','Strength'],DML:['Tackling','Marking','Passing','Crossing','Strength'],DMR:['Tackling','Marking','Passing','Crossing','Strength'],DMC:['Tackling','Marking','Positioning','Passing','Bravery','Creativity'],
     ML:['Passing','Dribbling','Crossing','Speed','Creativity'],MR:['Passing','Dribbling','Crossing','Speed','Creativity'],MC:['Passing','Positioning','Tackling','Dribbling','Creativity','Fitness'],
     AML:['Passing','Dribbling','Crossing','Shooting','Finishing','Speed'],AMR:['Passing','Dribbling','Crossing','Shooting','Finishing','Speed'],AMC:['Passing','Dribbling','Shooting','Finishing','Creativity','Speed'],ST:['Positioning','Shooting','Finishing','Heading','Strength','Speed']
   };
-  const keys=keyBySlot[slot]||white; const vals=keys.map(k=>Number(s[k]||0)).filter(v=>v>0); if(!vals.length) return 0;
-  return vals.reduce((a,b)=>a+b,0)/vals.length;
+  const keys=keyBySlot[primary]||OUTFIELD_SKILLS; const vals=keys.map(k=>Number(s[k]||0)).filter(v=>v>0); return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
 }
-
 function playerSlotScore(player,slot){
-  const fit=formationPositionFit(player.position,slot);
-  const ovr=Number(player.ovr||0);
-  const skill=roleSkillScore(player,slot);
-  const style=normalisePlaystyle(player);
-  const abilities=normaliseAbilities(player);
-  const styleBonus=(style && (PLAYSTYLE_BONUS[style]||[]).includes(slot))?12:0;
-  const abilityBonus=abilities.reduce((sum,a)=>sum+((ABILITY_BONUS[a]||[]).includes(slot)?4:0),0);
-  const positionBonus=fit===1?180:fit===0.55?25:0;
-  return positionBonus + fit*(ovr*0.44+skill*0.38)+styleBonus+abilityBonus;
+  const roles=playerRoles(player); const fit=formationPositionFit(roles,slot); const ovr=Number(player.ovr||0); const skill=roleSkillScore(player,slot); const style=normalisePlaystyle(player); const abilities=normaliseAbilities(player);
+  const opts=slotOptions(slot); const exactPrimary=normalisePosition(player.position)===opts.find(o=>roles.includes(o));
+  const styleBonus=(style&&(PLAYSTYLE_BONUS[style]||[]).some(x=>opts.includes(x)))?10:0;
+  const abilityBonus=abilities.reduce((sum,a)=>sum+((ABILITY_BONUS[a]||[]).some(x=>opts.includes(x))?3:0),0);
+  const positionBonus=fit===1?(exactPrimary?230:205):fit>0.2?18:-35;
+  return positionBonus + fit*(ovr*0.46+skill*0.40)+styleBonus+abilityBonus;
 }
-
 function assignFormation(players, formation){
-  const remaining=[...players];
-  const assignments=new Array(formation.slots.length);
-  const slotOrder=formation.slots.map((slot,index)=>({slot,index,exactCandidates:players.filter(p=>normalisePosition(p.position)===normalisePosition(slot)).length}))
-    .sort((a,b)=>a.exactCandidates-b.exactCandidates || a.index-b.index);
-
-  // Fill the rarest natural positions first. This prevents a versatile player
-  // from taking a slot that only one specialist can fill, which was a major
-  // cause of strange out-of-position XIs on larger squads.
+  const remaining=[...players]; const assignments=new Array(formation.slots.length);
+  const slotOrder=formation.slots.map((slot,index)=>({slot,index,candidates:players.filter(p=>formationPositionFit(p,slot)===1).length})).sort((a,b)=>a.candidates-b.candidates||a.index-b.index);
   for(const item of slotOrder){
     let best=null,bestScore=-Infinity,bestIndex=-1;
-    remaining.forEach((p,i)=>{
-      const score=playerSlotScore(p,item.slot);
-      if(score>bestScore){best=p;bestScore=score;bestIndex=i;}
-    });
+    remaining.forEach((p,i)=>{const score=playerSlotScore(p,item.slot);if(score>bestScore){best=p;bestScore=score;bestIndex=i;}});
     if(best){assignments[item.index]={player:best,slot:item.slot,score:bestScore};remaining.splice(bestIndex,1);}
   }
-  const chosen=assignments.filter(Boolean);
-  const total=chosen.reduce((sum,x)=>sum+x.score,0);
-  const exact=chosen.filter(x=>normalisePosition(x.player.position)===normalisePosition(x.slot)).length;
+  const chosen=assignments.filter(Boolean); const total=chosen.reduce((sum,x)=>sum+x.score,0); const exact=chosen.filter(x=>formationPositionFit(playerRoles(x.player),x.slot)===1).length;
   return {chosen,remaining,total,exact};
 }
-
 function chooseBestFormation(players){
   if(players.length<11) return {error:`You need at least 11 players. You currently have ${players.length}.`};
-  return FORMATIONS.map(f=>({formation:f,...assignFormation(players,f)})).sort((a,b)=>b.total-a.total)[0];
+  const ranked=FORMATIONS.map(f=>({formation:f,...assignFormation(players,f)}));
+  // A valid natural-role XI is more important than a small score difference.
+  ranked.sort((a,b)=>b.exact-a.exact || b.total-a.total);
+  return ranked[0];
 }
-
 function renderFormation(result){
-  const pitch=document.getElementById('formationPitch'), bench=document.getElementById('formationBench'); if(!pitch||!bench) return;
+  const pitch=document.getElementById('formationPitch'), bench=document.getElementById('formationBench'); if(!pitch||!bench)return;
   pitch.querySelectorAll('.pitch-player').forEach(e=>e.remove());
-
-  // Coordinates are deliberately spread over separate horizontal/vertical lines.
-  // These follow the normal Top Eleven shape: GK deepest, back line in front,
-  // midfield between the boxes, and attackers highest. Same-role players get
-  // their own lane rather than being stacked on top of each other.
   const layouts={
-    '4-4-2': [
-      ['GK',50,91],['DL',15,76],['DC',40,79],['DC',60,79],['DR',85,76],
-      ['ML',15,54],['MC',39,54],['MC',61,54],['MR',85,54],['ST',40,25],['ST',60,25]
-    ],
-    '4-3-3': [
-      ['GK',50,91],['DL',15,76],['DC',40,79],['DC',60,79],['DR',85,76],
-      ['MC',25,53],['MC',50,55],['MC',75,53],['AML',19,29],['ST',50,18],['AMR',81,29]
-    ],
-    '4-2-3-1': [
-      ['GK',50,91],['DL',15,76],['DC',40,79],['DC',60,79],['DR',85,76],
-      ['DMC',36,62],['DMC',64,62],['AML',18,36],['AMC',50,35],['AMR',82,36],['ST',50,15]
-    ],
-    '3-5-2': [
-      ['GK',50,91],['DC',25,78],['DC',50,80],['DC',75,78],
-      ['ML',14,55],['MC',37,55],['MC',50,58],['MC',63,55],['MR',86,55],['ST',40,24],['ST',60,24]
-    ],
-    '4-5-1': [
-      ['GK',50,91],['DL',15,76],['DC',40,79],['DC',60,79],['DR',85,76],
-      ['DMC',50,65],['ML',14,49],['MC',39,50],['MR',86,49],['AMC',50,32],['ST',50,15]
-    ],
-    '4-1-2-1-2': [
-      ['GK',50,91],['DL',15,76],['DC',40,79],['DC',60,79],['DR',85,76],
-      ['DMC',50,65],['MC',36,51],['MC',64,51],['AMC',50,34],['ST',40,16],['ST',60,16]
-    ]
+    '4-4-2':[['GK',50,91],['DL',12,72],['DC',35,78],['DC',65,78],['DR',88,72],['ML',11,50],['MC',36,55],['MC',64,55],['MR',89,50],['ST',38,19],['ST',62,19]],
+    '4-3-3':[['GK',50,91],['DL',12,72],['DC',35,78],['DC',65,78],['DR',88,72],['MC',24,52],['MC',50,57],['MC',76,52],['AML',16,28],['ST',50,15],['AMR',84,28]],
+    '4-2-3-1':[['GK',50,91],['DL',12,72],['DC',35,78],['DC',65,78],['DR',88,72],['DMC',34,60],['DMC',66,60],['AML',15,34],['AMC',50,32],['AMR',85,34],['ST',50,13]],
+    '3-5-2':[['GK',50,91],['DC',25,78],['DC',50,81],['DC',75,78],['ML',9,52],['MC',32,55],['MC',50,59],['MC',68,55],['MR',91,52],['ST',40,18],['ST',60,18]],
+    '4-5-1':[['GK',50,91],['DL',12,72],['DC',35,78],['DC',65,78],['DR',88,72],['DMC',50,63],['ML',10,48],['MC',35,51],['MR',90,48],['AMC',50,30],['ST',50,13]],
+    '4-1-2-1-2':[['GK',50,91],['DL',12,72],['DC',35,78],['DC',65,78],['DR',88,72],['DMC',50,64],['MC',34,51],['MC',66,51],['AMC',50,30],['ST',40,14],['ST',60,14]]
   };
-
   const layout=layouts[result.formation.name]||[];
   result.chosen.forEach(({player,slot},index)=>{
-    const spec=layout[index] || [slot,50,50];
-    const el=document.createElement('div'); el.className='pitch-player';
-    el.style.left=spec[1]+'%'; el.style.top=spec[2]+'%';
-    const lastName=String(player.name||'Player').trim().split(/\s+/).pop()||'Player';
-    el.title=`${player.name} · ${slot} · OVR ${player.ovr||'—'}`;
-    el.innerHTML=`<div class="pitch-player-dot">${player.profileImage?`<img src="${player.profileImage}" alt="">`:`<span>${escapeHtml(slot)}</span>`}</div><div class="pitch-player-name">${escapeHtml(lastName)}</div>`;
-    el.addEventListener('click',()=>openPlayerProfile(player.key)); pitch.appendChild(el);
+    const spec=layout[index]||[slotOptions(slot)[0]||'?',50,50]; const el=document.createElement('div'); el.className='pitch-player'; el.style.left=spec[1]+'%';el.style.top=spec[2]+'%';
+    const actual=normalisePosition(player.position)||slotOptions(slot)[0]||'?'; const lastName=String(player.name||'Player').trim().split(/\s+/).pop()||'Player'; el.title=`${player.name} · ${actual} · OVR ${player.ovr||'—'}`;
+    el.innerHTML=`<div class="pitch-player-dot">${player.profileImage?`<img src="${player.profileImage}" alt="">`:`<span>${escapeHtml(actual)}</span>`}</div><div class="pitch-player-name">${escapeHtml(lastName)}</div>`; el.addEventListener('click',()=>openPlayerProfile(player.key));pitch.appendChild(el);
   });
-  bench.innerHTML=result.remaining.slice(0,8).map(p=>`<div class="bench-card"><b>${escapeHtml(p.name||'Player')}</b><br><span>${escapeHtml(p.position||'?')} · OVR ${escapeHtml(p.ovr||'—')}${normalisePlaystyle(p)?' · '+escapeHtml(normalisePlaystyle(p)):''}</span></div>`).join('');
+  bench.innerHTML=result.remaining.slice(0,8).map(p=>`<div class="bench-card"><b>${escapeHtml(p.name||'Player')}</b><br><span>${escapeHtml(playerRoles(p).join(' / '))} · OVR ${escapeHtml(p.ovr||'—')}${normalisePlaystyle(p)?' · '+escapeHtml(normalisePlaystyle(p)):''}</span></div>`).join('');
 }
-
 async function runTeamSelect(){
-  const players=await getAllPlayers(); const result=chooseBestFormation(players);
-  if(result.error){document.getElementById('formationName').textContent='Not enough players';document.getElementById('formationSummary').textContent=result.error;showToast(result.error,'err');return;}
-  document.getElementById('formationName').textContent=result.formation.name;
-  document.getElementById('formationSummary').textContent=`${result.exact}/11 natural-position picks · weighted team score ${Math.round(result.total)} · playstyles and abilities included`;
-  renderFormation(result);
-  try{await window.storage.set('formation:last',JSON.stringify({formation:result.formation.name,chosen:result.chosen.map(x=>({key:x.player.key,slot:x.slot})),updatedAt:new Date().toISOString()}),false);}catch(_){}
+  const players=await getAllPlayers(); const result=chooseBestFormation(players); if(result.error){document.getElementById('formationName').textContent='Not enough players';document.getElementById('formationSummary').textContent=result.error;showToast(result.error,'err');return;}
+  document.getElementById('formationName').textContent=result.formation.name; document.getElementById('formationSummary').textContent=`${result.exact}/11 natural-role picks · weighted team score ${Math.round(result.total)} · OVR + skills + playstyles + abilities`;
+  renderFormation(result); try{await window.storage.set('formation:last',JSON.stringify({formation:result.formation.name,chosen:result.chosen.map(x=>({key:x.player.key,slot:x.slot})),updatedAt:new Date().toISOString()}),false);}catch(_){ }
 }
-
-const teamSelectBtn=document.getElementById('teamSelectBtn'); if(teamSelectBtn) teamSelectBtn.addEventListener('click',runTeamSelect);
+const teamSelectBtn=document.getElementById('teamSelectBtn'); if(teamSelectBtn)teamSelectBtn.addEventListener('click',runTeamSelect);
 
 // ============================================================
 // MENTORS — real data transcribed from your own screenshots,
 // not invented. "Assigned" is stored locally so the app remembers
 // your current pick between visits.
 // ============================================================
-const MENTORS = [{"name": "Alan Shearer", "title": "The Finisher", "signature": "Corners, Free Kicks and Penalties are 25% more effective. If you miss, the opponent's attackers suffer a -10% penalty to their next attack.", "attributeBoost": "+20 (next +25) Strength and Shooting boost during the match", "tacticBoost": "Increases Dribbling effectiveness by 30%"}, {"name": "Lewis Green", "title": "The Wing Commander", "signature": "Crosses become extremely precise, making the defender's Heading attribute 80% less effective in Aerial duels", "attributeBoost": "+20 (next +40) Crossing and Heading boost during the match", "tacticBoost": "Increases the effectiveness of attacks over the Wings by 30%"}, {"name": "Rubén Herrera", "title": "The Saboteur", "signature": "During a counter-attack, the opposition's defense loses all organization, making their Marking, Positioning & Speed attributes 30% less effective", "attributeBoost": "+15 (next +20) Creativity and Passing boost during the match", "tacticBoost": "Increases Counter Attack effectiveness by 30%"}, {"name": "Cesc Fàbregas", "title": "The Architect", "signature": "Every successful pass makes the next one 15% harder to intercept, but your midfielders lose 8% more Stamina per attack", "attributeBoost": "+10 (next +15) Dribbling and Shooting boost during the match", "tacticBoost": "Increases Short Pass effectiveness by 30%"}, {"name": "Nemanja Vidić", "title": "The Iron Guard", "signature": "Each successful defensive check drains 2% of the opponent attacker's Condition, but risk of receiving a card is 10% higher", "attributeBoost": "+10 (next +15) Tackling and Bravery boost during the match", "tacticBoost": "Defensive actions are 25% more effective, but at the cost of 10% more Condition"}, {"name": "Claude Makélélé", "title": "The Enforcer", "signature": "While leading, your Defenders gain +15 to all Defensive attributes, but your team's Attacking attributes suffer a -10 penalty", "attributeBoost": "+10 (next +15) Bravery and Positioning boost during the match", "tacticBoost": "Defensive actions are 25% more effective against Short Passes"}, {"name": "Jonas Braun", "title": "The Analyst", "signature": "At halftime, this Mentor identifies the opponent's weakest defensive zone and grants a +20 All Attribute boost to all of your players attacking through that area for the rest of the game", "attributeBoost": "+5 to Strength and Positioning boost while the Mentor is assigned during the match", "tacticBoost": "Increases Long Pass effectiveness by 15% (next 20%)"}];
+const MENTORS = [
+  {name:"Alan Shearer",title:"The Finisher",focus:"Finishing",description:"Legendary Mentor focused on scoring and finishing."},
+  {name:"Claude Makélélé",title:"The Ball Winner",focus:"Ball-winning",description:"Legendary Mentor focused on recovering possession and defensive midfield work."},
+  {name:"Nemanja Vidić",title:"The Defender",focus:"Defence",description:"Legendary Mentor focused on defensive solidity and stopping attacks."},
+  {name:"Cesc Fàbregas",title:"The Playmaker",focus:"Playmaking",description:"Legendary Mentor focused on creative play and controlling the midfield."}
+];
 
 async function getAssignedMentor(){
   try{ const r = await window.storage.get('mentor:assigned', false); return r ? r.value : null; }catch(_){ return null; }
@@ -2625,9 +2711,8 @@ async function renderMentors(){
         </div>
         ${isAssigned ? '<span class="mentor-badge">ASSIGNED</span>' : ''}
       </div>
-      <div class="mentor-row"><b>Signature Move:</b> ${m.signature}</div>
-      <div class="mentor-row"><b>Attribute Boost:</b> ${m.attributeBoost}</div>
-      <div class="mentor-row"><b>Tactic Boost:</b> ${m.tacticBoost}</div>
+      <div class="mentor-row"><b>Specialisation:</b> ${m.focus}</div>
+      <div class="mentor-row">${m.description}</div>
       <button class="small mentor-assign-btn" data-mentor="${m.name.replace(/"/g,'&quot;')}">${isAssigned ? 'Unassign' : 'Assign'}</button>
     </div>`;
   }).join('');
@@ -2650,21 +2735,9 @@ document.addEventListener('click', async function(e){
 // attribute analysis this app doesn't do yet.
 // ============================================================
 const TACTICS_OPTIONS = {
-  "In Possession": {
-    "Shooting tendency": ["Shoot on Sight","Work it into the Box","Balanced"],
-    "Passing style": ["Short","Long","Mixed"],
-    "Focus passing": ["Left Flank","Right Flank","Both Flanks","Through the Middle","Balanced"]
-  },
-  "In Transition": {
-    "Possession Lost": ["Counter Press","Regroup"],
-    "Possession Won": ["Focus on Buildup","Counter Attack"],
-    "Mentality": ["Hard Defending","Defending","Normal","Attacking","Hard Attacking"]
-  },
-  "Out of Possession": {
-    "Marking style": ["Man to Man","Zonal"],
-    "Back line": ["Track Opponent","Set Offside Trap"],
-    "Tackling style": ["Stay on Feet","Aggressive","Balanced"]
-  }
+  "In Possession": {"Shooting Tendency":["Shoot on Sight","Work it into the Box","Balanced"],"Passing Style":["Short","Long","Mixed"],"Focus Passing":["Left Flank","Right Flank","Both Flanks","Through the Middle","Balanced"],"Cross Tendency":["Low","Medium","High"]},
+  "In Transition": {"Possession Lost":["Counter Press","Regroup"],"Possession Won":["Focus on Buildup","Counter Attack"],"Mentality":["Hard Defending","Defending","Normal","Attacking","Hard Attacking"]},
+  "Out of Possession": {"Marking Style":["Man to Man","Zonal"],"Pressing":["Low Block","Mid Press","High Press"],"Back Line":["Track Opponent","Set Offside Trap","Balanced"],"Tackling Style":["Stay on Feet","Aggressive","Balanced"]}
 };
 
 async function getTacticSelections(){
@@ -2703,6 +2776,65 @@ document.addEventListener('change', function(e){
   if(!sel) return;
   setTacticSelection(sel.getAttribute('data-group'), sel.getAttribute('data-field'), sel.value);
 });
+
+
+// ============================================================
+// PLAYMAKERS — set-piece and captain ranking
+// ============================================================
+function avgSkill(player,names){ const vals=names.map(n=>Number((player.skills||{})[n]||0)).filter(v=>v>0); return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0; }
+function scorePenalty(p){ return Number((p.skills||{}).Finishing||0)*0.62 + Number((p.skills||{}).Shooting||0)*0.20 + Number((p.skills||{}).Creativity||0)*0.08 + Number(p.ovr||0)*0.10 + (normaliseAbilities(p).includes('Penalty Kick Specialist')?20:0); }
+function scoreCorner(p){ return Number((p.skills||{}).Crossing||0)*0.62 + Number((p.skills||{}).Passing||0)*0.20 + Number((p.skills||{}).Creativity||0)*0.10 + Number(p.ovr||0)*0.08 + (normaliseAbilities(p).includes('Corner Specialist')?20:0); }
+function scoreFreeKick(p){ return Number((p.skills||{}).Shooting||0)*0.62 + Number((p.skills||{}).Finishing||0)*0.14 + Number((p.skills||{}).Passing||0)*0.14 + Number((p.skills||{}).Creativity||0)*0.06 + Number(p.ovr||0)*0.04 + (normaliseAbilities(p).includes('Free Kick Specialist')?20:0); }
+function scoreCaptain(p){ const age=Number(p.age||0); const experience=Math.min(30,Math.max(0,age-20)*1.2); const broad=avgSkill(p,['Tackling','Marking','Positioning','Passing','Creativity','Shooting','Finishing','Bravery','Fitness']); return Number(p.ovr||0)*0.58+broad*0.30+experience*0.12; }
+function playerFaceHtml(p){ return p.profileImage?`<img class="playmaker-face" src="${p.profileImage}" alt="">`:`<div class="playmaker-fallback">${escapeHtml(normalisePosition(p.position)||'?')}</div>`; }
+function playmakerRow(p,rank,score){ return `<div class="playmaker-row"><div class="playmaker-rank">${rank}</div>${playerFaceHtml(p)}<div><div class="playmaker-name">${escapeHtml(p.name||'Player')}</div><div class="playmaker-meta">${escapeHtml(playerRoles(p).join(' / '))} · OVR ${escapeHtml(p.ovr||'—')}${normaliseAbilities(p).length?' · '+escapeHtml(normaliseAbilities(p).join(', ')):''}</div></div><div class="playmaker-score">${Math.round(score)}</div></div>`; }
+async function renderPlaymakers(){
+  const players=await getAllPlayers(); const eligible=players.filter(p=>normalisePosition(p.position)!=='GK');
+  const penalties=eligible.map(p=>({p,score:scorePenalty(p)})).sort((a,b)=>b.score-a.score).slice(0,5);
+  const corner=eligible.map(p=>({p,score:scoreCorner(p)})).sort((a,b)=>b.score-a.score)[0]; const fk=eligible.map(p=>({p,score:scoreFreeKick(p)})).sort((a,b)=>b.score-a.score)[0]; const captain=players.map(p=>({p,score:scoreCaptain(p)})).sort((a,b)=>b.score-a.score)[0];
+  document.getElementById('penaltyTakers').innerHTML=penalties.length?penalties.map((x,i)=>playmakerRow(x.p,i+1,x.score)).join(''):'<div class="ability-empty">Add outfield players to rank penalty takers.</div>';
+  document.getElementById('cornerTaker').innerHTML=corner?playmakerRow(corner.p,1,corner.score):'<div class="ability-empty">No eligible player yet.</div>';
+  document.getElementById('freeKickTaker').innerHTML=fk?playmakerRow(fk.p,1,fk.score):'<div class="ability-empty">No eligible player yet.</div>';
+  document.getElementById('captainPick').innerHTML=captain?playmakerRow(captain.p,1,captain.score):'<div class="ability-empty">Add players to choose a captain.</div>';
+}
+
+// ============================================================
+// 2027 TACTICAL GENERATOR
+// ============================================================
+function squadMetrics(players){
+  const roleCounts={}; players.forEach(p=>playerRoles(p).forEach(r=>roleCounts[r]=(roleCounts[r]||0)+1));
+  const avg=(names)=>{const vals=players.map(p=>avgSkill(p,names)).filter(v=>v>0);return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;};
+  return {roleCounts,def:avg(['Tackling','Marking','Positioning','Bravery','Heading']),mid:avg(['Passing','Creativity','Dribbling','Positioning']),attack:avg(['Shooting','Finishing','Dribbling','Creativity']),cross:avg(['Crossing']),ovr:avg(['OVR'])};
+}
+function recommendTactics(players,priority){
+  const m=squadMetrics(players); const has=(r)=>m.roleCounts[r]||0;
+  const plans={
+    defending:{mentor:m.def>=m.mid?'Nemanja Vidić':'Claude Makélélé',shoot:'Balanced',pass:'Mixed',focus:'Balanced',cross:'Medium',lost:'Regroup',won:'Focus on Buildup',mentality:'Defending',mark:'Zonal',press:'Mid Press',back:'Balanced',tackle:'Stay on Feet'},
+    balanced:{mentor:m.mid>=m.def?'Cesc Fàbregas':'Claude Makélélé',shoot:'Balanced',pass:'Mixed',focus:'Balanced',cross:'Medium',lost:'Counter Press',won:'Focus on Buildup',mentality:'Normal',mark:'Zonal',press:'Mid Press',back:'Balanced',tackle:'Balanced'},
+    attacking:{mentor:m.attack>=m.mid?'Alan Shearer':'Cesc Fàbregas',shoot:'Work it into the Box',pass:'Short',focus:has('AML')+has('AMR')+has('ML')+has('MR')>=2?'Both Flanks':'Through the Middle',cross:m.cross>=110?'High':'Medium',lost:'Counter Press',won:'Counter Attack',mentality:'Attacking',mark:'Zonal',press:'High Press',back:'Set Offside Trap',tackle:'Aggressive'}
+  };
+  return {...plans[priority],metrics:m};
+}
+function tacticalCard(label,plan){return `<div class="tactical-preset"><h3>${label}</h3><div class="mentor">Mentor · ${escapeHtml(plan.mentor)}</div><div class="line">${escapeHtml(plan.shoot)} · ${escapeHtml(plan.pass)} · ${escapeHtml(plan.focus)}</div><div class="line">${escapeHtml(plan.lost)} / ${escapeHtml(plan.won)} · ${escapeHtml(plan.mentality)}</div><div class="line">${escapeHtml(plan.mark)} · ${escapeHtml(plan.press)} · ${escapeHtml(plan.back)} · ${escapeHtml(plan.tackle)}</div></div>`;}
+async function generateTacticalPlan(){
+  const players=await getAllPlayers(); const priority=document.getElementById('tacticalPriority').value; const plan=recommendTactics(players,priority); const el=document.getElementById('tacticalRecommendation');
+  if(players.length<11){el.innerHTML='<div class="tactical-result"><b>Not enough players.</b><div class="formation-note">Add at least 11 players before asking the app to generate a full team tactic.</div></div>';return;}
+  el.innerHTML=`<div class="tactical-result"><b>${priority[0].toUpperCase()+priority.slice(1)} recommendation</b><button class="small" style="float:right;color:var(--turf);border-color:var(--turf-dim);" data-apply-tactical="${priority}">Apply</button><div class="tactical-result-grid"><div class="tactical-result-item"><div class="tactical-result-label">Legendary Mentor</div><div class="tactical-result-value">${escapeHtml(plan.mentor)}</div></div><div class="tactical-result-item"><div class="tactical-result-label">Suggested mentality</div><div class="tactical-result-value">${escapeHtml(plan.mentality)}</div></div><div class="tactical-result-item"><div class="tactical-result-label">Core shape</div><div class="tactical-result-value">${priority==='defending'?'Protect the centre and regain shape':priority==='attacking'?'Press high and create width':'Control possession and maintain balance'}</div></div><div class="tactical-result-item"><div class="tactical-result-label">Squad basis</div><div class="tactical-result-value">${players.length} players analysed</div></div></div></div>`;
+}
+async function renderTacticalPresets(){ const players=await getAllPlayers(); const el=document.getElementById('tacticalPresets'); if(!el)return; if(players.length<1){el.innerHTML='';return;} el.innerHTML=tacticalCard('Defending',recommendTactics(players,'defending'))+tacticalCard('Balanced',recommendTactics(players,'balanced'))+tacticalCard('Attacking',recommendTactics(players,'attacking')); }
+async function applyTacticalPlan(priority){
+  const players=await getAllPlayers(); if(players.length<1)return;
+  const plan=recommendTactics(players,priority); const values={
+    'In Possession':{'Shooting Tendency':plan.shoot,'Passing Style':plan.pass,'Focus Passing':plan.focus,'Cross Tendency':plan.cross},
+    'In Transition':{'Possession Lost':plan.lost,'Possession Won':plan.won,'Mentality':plan.mentality},
+    'Out of Possession':{'Marking Style':plan.mark,'Pressing':plan.press,'Back Line':plan.back,'Tackling Style':plan.tackle}
+  };
+  for(const [group,fields] of Object.entries(values)) for(const [field,value] of Object.entries(fields)) await setTacticSelection(group,field,value);
+  await setAssignedMentor(plan.mentor); await renderTactics(); showToast(`${priority[0].toUpperCase()+priority.slice(1)} tactic applied · ${plan.mentor} assigned ✓`);
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-apply-tactical]');if(!b)return;applyTacticalPlan(b.getAttribute('data-apply-tactical'));});
+
+const generateTacticsBtn=document.getElementById('generateTacticsBtn'); if(generateTacticsBtn)generateTacticsBtn.addEventListener('click',generateTacticalPlan);
 
 const clearAllBtn = document.getElementById('clearAllDataBtn');
 if(clearAllBtn){
