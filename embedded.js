@@ -1836,10 +1836,13 @@ const teamSelectBtn=document.getElementById('teamSelectBtn'); if(teamSelectBtn)t
 // your current pick between visits.
 // ============================================================
 const MENTORS = [
-  {name:"Alan Shearer",title:"The Finisher",focus:"Finishing",description:"Legendary Mentor focused on scoring and finishing."},
-  {name:"Claude Makélélé",title:"The Ball Winner",focus:"Ball-winning",description:"Legendary Mentor focused on recovering possession and defensive midfield work."},
-  {name:"Nemanja Vidić",title:"The Defender",focus:"Defence",description:"Legendary Mentor focused on defensive solidity and stopping attacks."},
-  {name:"Cesc Fàbregas",title:"The Playmaker",focus:"Playmaking",description:"Legendary Mentor focused on creative play and controlling the midfield."}
+  {name:"Alan Shearer",title:"The Finisher",focus:"Finishing",style:"attack",verified:true,description:"Legendary Mentor centred on scoring and finishing."},
+  {name:"Claude Makélélé",title:"The Ball Winner",focus:"Ball-winning",style:"defence",verified:true,description:"Legendary Mentor centred on recovering possession and defensive midfield work."},
+  {name:"Nemanja Vidić",title:"The Defender",focus:"Defence",style:"defence",verified:true,description:"Legendary Mentor centred on defensive solidity and stopping attacks."},
+  {name:"Cesc Fàbregas",title:"The Playmaker",focus:"Playmaking",style:"control",verified:true,description:"Legendary Mentor centred on creative play and controlling midfield tempo."},
+  {name:"Lewis Green",title:"The Wing Commander",focus:"Crossing & Heading",style:"width",verified:false,description:"Squad analysis favours Lewis when your team is built around wide play, crossing and aerial targets."},
+  {name:"Jonas Brown",title:"The Tactical Adapter",focus:"Adaptive team play",style:"adaptive",verified:false,description:"Included in the current official seven-Mentor roster. The app treats Jonas as a flexible balanced option until a verified public breakdown of every individual bonus is available."},
+  {name:"Rubén Herrera",title:"The Defensive Organiser",focus:"Defensive structure",style:"structure",verified:false,description:"Included in the current official seven-Mentor roster. The app favours Rubén for defensive/shape recommendations based on observed community use with defensive tactics."}
 ];
 
 async function getAssignedMentor(){
@@ -1866,6 +1869,7 @@ async function renderMentors(){
       </div>
       <div class="mentor-row"><b>Specialisation:</b> ${m.focus}</div>
       <div class="mentor-row">${m.description}</div>
+      <div class="mentor-row" style="font-size:11px;opacity:.78;">${m.verified ? 'Officially established focus' : 'App recommendation profile based on current public/community evidence; exact in-game bonuses still depend on Mentor level.'}</div>
       <button class="small mentor-assign-btn" data-mentor="${m.name.replace(/"/g,'&quot;')}">${isAssigned ? 'Unassign' : 'Assign'}</button>
     </div>`;
   }).join('');
@@ -1959,20 +1963,33 @@ function squadMetrics(players){
   const avg=(names)=>{const vals=players.map(p=>avgSkill(p,names)).filter(v=>v>0);return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;};
   return {roleCounts,def:avg(['Tackling','Marking','Positioning','Bravery','Heading']),mid:avg(['Passing','Creativity','Dribbling','Positioning']),attack:avg(['Shooting','Finishing','Dribbling','Creativity']),cross:avg(['Crossing']),ovr:avg(['OVR'])};
 }
+function mentorScore(priority,m,mentor){
+  const base={defending:{defence:100,structure:94,adaptive:82,control:68,width:55,attack:48},balanced:{control:100,adaptive:94,defence:86,structure:82,width:80,attack:76},attacking:{attack:100,width:96,control:90,adaptive:84,defence:66,structure:62}};
+  let score=base[priority][mentor.style]||60;
+  if(mentor.name==='Lewis Green') score+=m.cross/20;
+  if(mentor.name==='Alan Shearer') score+=m.attack/20;
+  if(mentor.name==='Cesc Fàbregas') score+=m.mid/20;
+  if(mentor.name==='Claude Makélélé') score+=(m.def+m.mid)/45;
+  if(mentor.name==='Nemanja Vidić') score+=m.def/18;
+  if(mentor.name==='Rubén Herrera') score+=m.def/20;
+  if(mentor.name==='Jonas Brown') score+=(m.def+m.mid+m.attack)/70;
+  return Math.round(score*10)/10;
+}
+function bestMentor(priority,m){return MENTORS.map(x=>({...x,score:mentorScore(priority,m,x)})).sort((a,b)=>b.score-a.score)[0];}
 function recommendTactics(players,priority){
-  const m=squadMetrics(players); const has=(r)=>m.roleCounts[r]||0;
+  const m=squadMetrics(players); const has=(r)=>m.roleCounts[r]||0; const mentor=bestMentor(priority,m).name;
   const plans={
-    defending:{mentor:m.def>=m.mid?'Nemanja Vidić':'Claude Makélélé',shoot:'Balanced',pass:'Mixed',focus:'Balanced',cross:'Medium',lost:'Regroup',won:'Focus on Buildup',mentality:'Defending',mark:'Zonal',press:'Mid Press',back:'Balanced',tackle:'Stay on Feet'},
-    balanced:{mentor:m.mid>=m.def?'Cesc Fàbregas':'Claude Makélélé',shoot:'Balanced',pass:'Mixed',focus:'Balanced',cross:'Medium',lost:'Counter Press',won:'Focus on Buildup',mentality:'Normal',mark:'Zonal',press:'Mid Press',back:'Balanced',tackle:'Balanced'},
-    attacking:{mentor:m.attack>=m.mid?'Alan Shearer':'Cesc Fàbregas',shoot:'Work it into the Box',pass:'Short',focus:has('AML')+has('AMR')+has('ML')+has('MR')>=2?'Both Flanks':'Through the Middle',cross:m.cross>=110?'High':'Medium',lost:'Counter Press',won:'Counter Attack',mentality:'Attacking',mark:'Zonal',press:'High Press',back:'Set Offside Trap',tackle:'Aggressive'}
+    defending:{mentor,shoot:'Balanced',pass:'Mixed',focus:'Balanced',cross:'Medium',lost:'Regroup',won:'Focus on Buildup',mentality:'Defending',mark:'Zonal',press:'Mid Press',back:'Balanced',tackle:'Stay on Feet'},
+    balanced:{mentor,shoot:'Balanced',pass:'Mixed',focus:'Balanced',cross:'Medium',lost:'Counter Press',won:'Focus on Buildup',mentality:'Normal',mark:'Zonal',press:'Mid Press',back:'Balanced',tackle:'Balanced'},
+    attacking:{mentor,shoot:'Work it into the Box',pass:'Short',focus:has('AML')+has('AMR')+has('ML')+has('MR')>=2?'Both Flanks':'Through the Middle',cross:m.cross>=110?'High':'Medium',lost:'Counter Press',won:'Counter Attack',mentality:'Attacking',mark:'Zonal',press:'High Press',back:'Set Offside Trap',tackle:'Aggressive'}
   };
   return {...plans[priority],metrics:m};
 }
-function tacticalCard(label,plan){return `<div class="tactical-preset"><h3>${label}</h3><div class="mentor">Mentor · ${escapeHtml(plan.mentor)}</div><div class="line">${escapeHtml(plan.shoot)} · ${escapeHtml(plan.pass)} · ${escapeHtml(plan.focus)}</div><div class="line">${escapeHtml(plan.lost)} / ${escapeHtml(plan.won)} · ${escapeHtml(plan.mentality)}</div><div class="line">${escapeHtml(plan.mark)} · ${escapeHtml(plan.press)} · ${escapeHtml(plan.back)} · ${escapeHtml(plan.tackle)}</div></div>`;}
+function tacticalCard(label,plan){return `<div class="tactical-preset"><h3>${label}</h3><div class="mentor">Recommended Mentor · ${escapeHtml(plan.mentor)}</div><div class="line">${escapeHtml(plan.shoot)} · ${escapeHtml(plan.pass)} · ${escapeHtml(plan.focus)}</div><div class="line">${escapeHtml(plan.lost)} / ${escapeHtml(plan.won)} · ${escapeHtml(plan.mentality)}</div><div class="line">${escapeHtml(plan.mark)} · ${escapeHtml(plan.press)} · ${escapeHtml(plan.back)} · ${escapeHtml(plan.tackle)}</div></div>`;}
 async function generateTacticalPlan(){
   const players=await getAllPlayers(); const priority=document.getElementById('tacticalPriority').value; const plan=recommendTactics(players,priority); const el=document.getElementById('tacticalRecommendation');
   if(players.length<11){el.innerHTML='<div class="tactical-result"><b>Not enough players.</b><div class="formation-note">Add at least 11 players before asking the app to generate a full team tactic.</div></div>';return;}
-  el.innerHTML=`<div class="tactical-result"><b>${priority[0].toUpperCase()+priority.slice(1)} recommendation</b><button class="small" style="float:right;color:var(--turf);border-color:var(--turf-dim);" data-apply-tactical="${priority}">Apply</button><div class="tactical-result-grid"><div class="tactical-result-item"><div class="tactical-result-label">Legendary Mentor</div><div class="tactical-result-value">${escapeHtml(plan.mentor)}</div></div><div class="tactical-result-item"><div class="tactical-result-label">Suggested mentality</div><div class="tactical-result-value">${escapeHtml(plan.mentality)}</div></div><div class="tactical-result-item"><div class="tactical-result-label">Core shape</div><div class="tactical-result-value">${priority==='defending'?'Protect the centre and regain shape':priority==='attacking'?'Press high and create width':'Control possession and maintain balance'}</div></div><div class="tactical-result-item"><div class="tactical-result-label">Squad basis</div><div class="tactical-result-value">${players.length} players analysed</div></div></div></div>`;
+  el.innerHTML=`<div class="tactical-result"><b>${priority[0].toUpperCase()+priority.slice(1)} recommendation</b><button class="small" style="float:right;color:var(--turf);border-color:var(--turf-dim);" data-apply-tactical="${priority}">Apply</button><div class="tactical-result-grid"><div class="tactical-result-item"><div class="tactical-result-label">Recommended Mentor</div><div class="tactical-result-value">${escapeHtml(plan.mentor)}</div></div><div class="tactical-result-item"><div class="tactical-result-label">Suggested mentality</div><div class="tactical-result-value">${escapeHtml(plan.mentality)}</div></div><div class="tactical-result-item"><div class="tactical-result-label">Core shape</div><div class="tactical-result-value">${priority==='defending'?'Protect the centre and regain shape':priority==='attacking'?'Press high and create width':'Control possession and maintain balance'}</div></div><div class="tactical-result-item"><div class="tactical-result-label">Squad basis</div><div class="tactical-result-value">${players.length} players analysed</div></div></div></div>`;
 }
 async function renderTacticalPresets(){ const players=await getAllPlayers(); const el=document.getElementById('tacticalPresets'); if(!el)return; if(players.length<1){el.innerHTML='';return;} el.innerHTML=tacticalCard('Defending',recommendTactics(players,'defending'))+tacticalCard('Balanced',recommendTactics(players,'balanced'))+tacticalCard('Attacking',recommendTactics(players,'attacking')); }
 async function applyTacticalPlan(priority){
